@@ -38,6 +38,7 @@
                             Read Page
                         </a>
                         {% if user.is_authenticated %}
+                        <!-- ANY logged-in user can edit -->
                         <a href="{% url 'edit_page' entry %}" class="btn btn-sm btn-outline-secondary">
                             <i class="fas fa-edit"></i> Edit
                         </a>
