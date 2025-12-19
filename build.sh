@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
 set -o errexit
 
+echo "📦 Installing dependencies..."
 pip install -r requirements.txt
 
-python manage.py collectstatic --noinput
+echo "🗄️ Setting up database..."
 python manage.py migrate
 
-# --- CRITICAL: Add this line after migrate ---
+echo "🎨 Collecting static files..."
+python manage.py collectstatic --noinput
+
+echo "📝 Importing wiki entries..."
+# First ensure entries directory exists
+mkdir -p entries
 python import_entries.py
 
-echo "✅ Build, migrations, and data import complete."
+echo "✅ Build completed!"
