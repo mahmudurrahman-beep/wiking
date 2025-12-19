@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Exit on error
 set -o errexit
 
-# Install dependencies
 pip install -r requirements.txt
 
-# Collect static files
 python manage.py collectstatic --noinput
-
-# Apply database migrations
 python manage.py migrate
+
+# --- CRITICAL: Add this line after migrate ---
+python import_entries.py
+
+echo "✅ Build, migrations, and data import complete."
