@@ -16,25 +16,32 @@
                 {% if entry_user %}
                 <div class="entry-meta mt-2">
                     <span class="badge bg-light text-dark">
-                        <i class="fas fa-user-edit me-1"></i>By {{ entry_user.username }}
+                        <i class="fas fa-user-edit me-1"></i>Latest edit by {{ entry_user.username }}
                     </span>
+                    {% if total_edits > 1 %}
+                    <span class="badge bg-info text-white ms-2">
+                        <i class="fas fa-history me-1"></i>{{ total_edits }} edits
+                    </span>
+                    {% endif %}
                 </div>
                 {% endif %}
             </div>
             
-            <!-- Action Buttons -->
+            <!-- Action Buttons - OPEN EDITING -->
             <div class="action-buttons">
-                {% if user.is_authenticated and user == entry_user %}
+                {% if user.is_authenticated %}
                 <div class="btn-group" role="group">
+                    <!-- ANY authenticated user can edit -->
                     <a href="{% url 'edit_page' title %}" class="btn btn-primary">
-                        <i class="fas fa-edit me-1"></i>Edit
+                        <i class="fas fa-edit me-1"></i>Edit Page
                     </a>
+                    {% if total_edits > 1 %}
+                    <a href="{% url 'history' title %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-history me-1"></i>History
+                    </a>
+                    {% endif %}
                 </div>
-                {% elif user.is_authenticated and not entry_user %}
-                <button class="btn btn-outline-secondary" disabled>
-                    <i class="fas fa-user-slash me-1"></i>Public Page
-                </button>
-                {% elif not user.is_authenticated %}
+                {% else %}
                 <a href="{% url 'login' %}" class="btn btn-outline-primary">
                     <i class="fas fa-sign-in-alt me-1"></i>Login to Edit
                 </a>
@@ -64,6 +71,36 @@
         {% endif %}
     </div>
     
+    <!-- Edit History -->
+    {% if edit_history and edit_history|length > 1 %}
+    <div class="edit-history mt-5">
+        <h5 class="border-bottom pb-2">
+            <i class="fas fa-history me-2"></i>Recent Edits
+        </h5>
+        <div class="list-group">
+            {% for edit in edit_history|slice:":3" %}
+            <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                    <small class="text-muted">
+                        <i class="fas fa-user me-1"></i>{{ edit.user.username }}
+                    </small>
+                    <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>{{ edit.created_at|date:"M d, Y H:i" }}
+                    </small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% if total_edits > 3 %}
+        <div class="text-end mt-2">
+            <a href="{% url 'history' title %}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-list me-1"></i>View All {{ total_edits }} Edits
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
     <!-- Page Footer -->
     <div class="entry-footer mt-5 pt-3 border-top">
         <div class="row">
@@ -73,18 +110,18 @@
                         <small class="text-muted">
                             <i class="fas fa-info-circle me-1"></i>
                             {% if entry_user %}
-                            Page created by {{ entry_user.username }}
+                            Open editing • Latest edit by {{ entry_user.username }}
                             {% else %}
-                            Public encyclopedia page
+                            Public encyclopedia page • Open editing
                             {% endif %}
                         </small>
                     </div>
                     <div>
-                        {% if user.is_authenticated and user == entry_user %}
-                        <a href="{% url 'edit_page' title %}" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-edit me-1"></i>Edit This Page
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'edit_page' title %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-edit me-1"></i>Improve This Page
                         </a>
-                        {% elif not user.is_authenticated %}
+                        {% else %}
                         <a href="{% url 'login' %}" class="btn btn-sm btn-primary">
                             <i class="fas fa-sign-in-alt me-1"></i>Login to Contribute
                         </a>
