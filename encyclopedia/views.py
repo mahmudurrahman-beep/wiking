@@ -10,6 +10,67 @@ import markdown2
 import random
 import re
 
+# ============ AUTHENTICATION VIEWS ============
+
+def register_view(request):
+    """User registration"""
+    if request.user.is_authenticated:
+        return redirect('index')
+    
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '').strip()
+        confirm_password = request.POST.get('confirm_password', '').strip()
+        email = request.POST.get('email', '').strip()
+        
+        if not username or not password:
+            messages.error(request, "Username and password are required")
+        elif len(username) < 3:
+            messages.error(request, "Username must be at least 3 characters")
+        elif len(password) < 6:
+            messages.error(request, "Password must be at least 6 characters")
+        elif password != confirm_password:
+            messages.error(request, "Passwords do not match")
+        elif User.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists")
+        else:
+            user = User.objects.create_user(
+                username=username,
+                password=password,
+                email=email if email else ''
+            )
+            login(request, user)
+            messages.success(request, f"Welcome, {username}! You can now create and edit pages.")
+            return redirect('index')
+    
+    return render(request, 'encyclopedia/register.html', {'user': request.user})
+
+def login_view(request):
+    """User login"""
+    if request.user.is_authenticated:
+        return redirect('index')
+    
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '').strip()
+        
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            messages.success(request, f"Welcome back, {username}!")
+            return redirect('index')
+        else:
+            messages.error(request, "Invalid username or password")
+    
+    return render(request, 'encyclopedia/login.html', {'user': request.user})
+
+def logout_view(request):
+    """User logout"""
+    if request.user.is_authenticated:
+        logout(request)
+        messages.info(request, "You have been logged out.")
+    return redirect('index')
+
 # ============ WIKI VIEWS ============
 
 def index(request):
@@ -56,6 +117,28 @@ def entry(request, title):
         'entry_user': entry_obj.user,  # Original creator
         'edit_history': edit_history,
         'total_edits': Entry.objects.filter(title=title).count(),
+        'user': request.user
+    })
+
+def search(request):
+    """Search entries (public access)"""
+    query = request.GET.get('q', '').strip()
+    entries = [entry.title for entry in Entry.objects.all()]
+    
+    if not query:
+        return render(request, 'encyclopedia/search.html', {
+            'query': query,
+            'results': [],
+            'user': request.user
+        })
+    
+    # Case-insensitive search
+    query_lower = query.lower()
+    results = [e for e in entries if query_lower in e.lower()]
+    
+    return render(request, 'encyclopedia/search.html', {
+        'query': query,
+        'results': results,
         'user': request.user
     })
 
@@ -153,3 +236,16 @@ def history(request, title):
         'entries': entries,
         'user': request.user
     })
+
+def random_page(request):
+    """Redirect to random entry (public access)"""
+    entries = [entry.title for entry in Entry.objects.all()]
+    
+    if not entries:
+        return render(request, 'encyclopedia/error.html', {
+            'message': "No entries available.",
+            'user': request.user
+        })
+    
+    title = random.choice(entries)
+    return redirect('entry', title=title)
