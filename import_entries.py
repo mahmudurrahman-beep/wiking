@@ -1,75 +1,46 @@
-"""
-Import script for wiki entries.
-Optimized for Render.com deployment
-"""
-
+# import_entries.py
 import os
 import sys
 import django
-from pathlib import Path
-import shutil
 
 # Setup Django
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wiki.settings')
 django.setup()
 
-from encyclopedia.util import save_entry, get_entry, list_entries, ensure_entries_directory
 from encyclopedia.models import Entry
 from django.contrib.auth.models import User
-from django.conf import settings
+from encyclopedia.util import list_entries, get_entry
 
-# ====== SAMPLE ENTRIES (FIXED VERSION) ======
-SAMPLE_ENTRIES = [
-    ("CSS", """# CSS
+def import_markdown_entries():
+    """Import all Markdown files into database"""
+    
+    # Get or create a default user (or use your superuser)
+    try:
+        user = User.objects.get(username='admin')
+    except User.DoesNotExist:
+        user = User.objects.create_user('admin', 'admin@example.com', 'admin123')
+        print("Created admin user (password: admin123)")
+    
+    # Import each Markdown file
+    entries = list_entries()
+    imported = 0
+    
+    for entry_title in entries:
+        # Check if entry already exists in database
+        if not Entry.objects.filter(title=entry_title, user=user).exists():
+            content = get_entry(entry_title)
+            if content:
+                Entry.objects.create(
+                    user=user,
+                    title=entry_title,
+                    content=content
+                )
+                imported += 1
+                print(f"✓ Imported: {entry_title}")
+    
+    print(f"\n✅ Import complete! {imported} entries imported.")
+    print(f"Total entries in database: {Entry.objects.count()}")
 
-Cascading Style Sheets (CSS) is a style sheet language used for describing the presentation of a document written in HTML or XML.
-
-## Key Features
-- Separates content from presentation
-- Supports responsive design
-- Works with all modern browsers
-
-```css
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-}
-```"""),
-
-    ("Django", """# Django
-
-Django is a high-level Python web framework that encourages rapid development and clean, pragmatic design.
-
-## Features
-- Batteries-included framework
-- Excellent documentation
-- Built-in admin interface
-- ORM (Object-Relational Mapping)
-- Security features out of the box
-
-## Basic Setup
-```python
-# settings.py
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-]
-```"""),
-
-    ("Git", """# Git
-
-Git is a distributed version control system that tracks changes in source code during software development.
-
-## Basic Commands
-```bash
-git init          # Initialize repository
-git add .         # Stage all changes
-git commit -m "message"  # Commit changes
-git push origin main     # Push to remote
-git pull          # Pull latest changes
+if __name__ == '__main__':
+    import_markdown_entries()
