@@ -67,11 +67,13 @@ def logout_view(request):
 # ============ WIKI VIEWS ============
 
 def index(request):
-    """Home page showing ALL entries (public access)"""
-    # Show all entries to everyone
-    entries = Entry.objects.list_entries()  # No user filter for public viewing
+    """Home page showing ALL entries from database"""
+    # Get entries from database (not from Markdown files)
+    entries = Entry.objects.all().order_by('title')
+    entry_titles = [entry.title for entry in entries]
+    
     return render(request, 'encyclopedia/index.html', {
-        'entries': entries,
+        'entries': entry_titles,
         'user': request.user
     })
 
