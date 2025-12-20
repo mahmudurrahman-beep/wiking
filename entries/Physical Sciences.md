@@ -1,0 +1,29 @@
+**Physics**
+  - Mechanics (motion, forces, energy)
+  - Thermodynamics (heat, entropy)
+  - Electricity & Magnetism
+  - Quantum physics & relativity
+- **Chemistry**
+  - Inorganic chemistry (elements, compounds, reactions)
+  - Organic chemistry (carbon compounds, biomolecules)
+  - Biochemistry (enzymes, metabolism)
+  - Physical chemistry (states of matter, kinetics)
+- **Astronomy**
+  - Solar system (planets, moons, asteroids)
+  - Stars & galaxies
+  - Cosmology (Big Bang, universe expansion)
+  - Space exploration (telescopes, satellites, missions)**Physics**
+  - Mechanics (motion, forces, energy)
+  - Thermodynamics (heat, entropy)
+  - Electricity & Magnetism
+  - Quantum physics & relativity
+- **Chemistry**
+  - Inorganic chemistry (elements, compounds, reactions)
+  - Organic chemistry (carbon compounds, biomolecules)
+  - Biochemistry (enzymes, metabolism)
+  - Physical chemistry (states of matter, kinetics)
+- **Astronomy**
+  - Solar system (planets, moons, asteroids)
+  - Stars & galaxies
+  - Cosmology (Big Bang, universe expansion)
+  - Space exploration (telescopes, satellites, missions)
