@@ -1,4 +1,3 @@
-# UPDATED encyclopedia/views.py with proper GitHub sync handling
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.http import HttpResponseForbidden
@@ -8,6 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from .models import Entry
 from .storage import get_entry_content, get_all_titles, save_entry_locally, sync_with_github, git_pull_latest
+from .history_storage import save_to_history, load_from_history
 import markdown2
 import random
 import re
@@ -108,14 +108,17 @@ def entry(request, title):
     # Convert markdown to HTML
     content_html = markdown2.markdown(content)
 
-    # Get edit history from database (optional)
-    edit_history = Entry.objects.filter(title=title).order_by('-created_at')[:5]
+    # Get edit history from file-based storage
+    file_history = load_from_history(title)
+
+    # Also get database history for backward compatibility (optional)
+    db_history = Entry.objects.filter(title=title).order_by('-created_at')[:5]
 
     return render(request, 'encyclopedia/entry.html', {
         'title': title,
         'content': content_html,
-        'edit_history': edit_history,
-        'total_edits': Entry.objects.filter(title=title).count(),
+        'edit_history': file_history[:5] if file_history else db_history,
+        'total_edits': len(file_history) if file_history else Entry.objects.filter(title=title).count(),
         'user': request.user
     })
 
@@ -161,26 +164,25 @@ def edit_page(request, title):
                 'user': request.user
             })
 
-       # Save to file and GitHub
-save_entry_locally(title, new_content)
-sync_with_github(title, new_content, request.user.username)
-
-# ALSO save to file-based history
-from .history_storage import save_to_history
-file_history = save_to_history(title, request.user, new_content)
-
-# Optional: Still save to database if you want
-Entry.objects.create(
-    title=title,
-    content=new_content,
-    user=request.user
-)
+        # Save to file and GitHub
+        save_entry_locally(title, new_content)
+        github_synced = sync_with_github(title, new_content, request.user.username)
         
-        # Show appropriate message based on GitHub sync result
+        # Save to file-based history
+        save_to_history(title, request.user, new_content)
+        
+        # Also save to database for history (optional)
+        Entry.objects.create(
+            title=title,
+            content=new_content,
+            user=request.user
+        )
+        
+        # Show appropriate message
         if github_synced:
-            messages.success(request, f"✅ Page '{title}' updated successfully and synced to GitHub!")
+            messages.success(request, f"✅ Page '{title}' updated and synced to GitHub!")
         else:
-            messages.warning(request, f"⚠️ Page '{title}' saved locally but failed to sync with GitHub. Check Render logs.")
+            messages.warning(request, f"⚠️ Page '{title}' saved locally but GitHub sync failed.")
         
         return redirect('entry', title=title)
     
@@ -208,31 +210,28 @@ def new_page(request):
         # Check if page already exists
         existing_content = get_entry_content(title)
         if existing_content is not None:
-            messages.info(request, 
-                f"Page '{title}' already exists. You can edit the existing page."
-            )
+            messages.info(request, f"Page '{title}' already exists. You can edit it.")
             return redirect('edit_page', title=title)
 
         # Save to file and GitHub
-save_entry_locally(title, content)
-sync_with_github(title, content, request.user.username)
-
-# ALSO save to file-based history
-from .history_storage import save_to_history
-file_history = save_to_history(title, request.user, content)
-
-# Save to database
-Entry.objects.create(
-    user=request.user, 
-    title=title, 
-    content=content
-)
+        save_entry_locally(title, content)
+        github_synced = sync_with_github(title, content, request.user.username)
         
-        # Show appropriate message based on GitHub sync result
+        # Save to file-based history
+        save_to_history(title, request.user, content)
+        
+        # Save to database
+        Entry.objects.create(
+            user=request.user, 
+            title=title, 
+            content=content
+        )
+        
+        # Show appropriate message
         if github_synced:
-            messages.success(request, f"✅ New page '{title}' created successfully and synced to GitHub!")
+            messages.success(request, f"✅ New page '{title}' created and synced to GitHub!")
         else:
-            messages.warning(request, f"⚠️ Page '{title}' created locally but failed to sync with GitHub. Check Render logs.")
+            messages.warning(request, f"⚠️ Page '{title}' created locally but GitHub sync failed.")
         
         return redirect('entry', title=title)
 
