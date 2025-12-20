@@ -161,18 +161,20 @@ def edit_page(request, title):
                 'user': request.user
             })
 
-        # Save to file
-        save_entry_locally(title, new_content)
-        
-        # Sync to GitHub - CHECK THE RETURN VALUE
-        github_synced = sync_with_github(title, new_content, request.user.username)
-        
-        # Also save to database for history
-        Entry.objects.create(
-            title=title,
-            content=new_content,
-            user=request.user
-        )
+       # Save to file and GitHub
+save_entry_locally(title, new_content)
+sync_with_github(title, new_content, request.user.username)
+
+# ALSO save to file-based history
+from .history_storage import save_to_history
+file_history = save_to_history(title, request.user, new_content)
+
+# Optional: Still save to database if you want
+Entry.objects.create(
+    title=title,
+    content=new_content,
+    user=request.user
+)
         
         # Show appropriate message based on GitHub sync result
         if github_synced:
@@ -211,18 +213,20 @@ def new_page(request):
             )
             return redirect('edit_page', title=title)
 
-        # Save to file
-        save_entry_locally(title, content)
-        
-        # Sync to GitHub - CHECK THE RETURN VALUE
-        github_synced = sync_with_github(title, content, request.user.username)
-        
-        # Save to database
-        Entry.objects.create(
-            user=request.user, 
-            title=title, 
-            content=content
-        )
+        # Save to file and GitHub
+save_entry_locally(title, content)
+sync_with_github(title, content, request.user.username)
+
+# ALSO save to file-based history
+from .history_storage import save_to_history
+file_history = save_to_history(title, request.user, content)
+
+# Save to database
+Entry.objects.create(
+    user=request.user, 
+    title=title, 
+    content=content
+)
         
         # Show appropriate message based on GitHub sync result
         if github_synced:
