@@ -8,6 +8,33 @@ from pathlib import Path
 import dj_database_url
 from django.contrib.messages import constants as messages
 
+# Add these new environment variables
+# In wiki/settings.py, add to existing settings:
+
+# GitHub Sync Settings
+GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
+GITHUB_REPO_OWNER = os.environ.get('GITHUB_REPO_OWNER', '')
+GITHUB_REPO_NAME = os.environ.get('GITHUB_REPO_NAME', '')
+
+# Database configuration - UPDATED
+# Use this instead of your current DATABASES setup:
+DATABASES = {
+    'default': dj_database_url.config(
+        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+}
+
+# Force PostgreSQL on Render if DATABASE_URL is set
+if os.environ.get('DATABASE_URL'):
+    DATABASES['default'] = dj_database_url.config(
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
