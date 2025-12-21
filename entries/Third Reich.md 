@@ -1,0 +1,22 @@
+# Third Reich (Nazi Germany)
+
+## Origins
+- Term “Third Reich” (German: *Drittes Reich*) meant the “Third Empire,” following the **Holy Roman Empire (First Reich)** and the **German Empire (Second Reich)**.  
+- Began in **1933** when Adolf Hitler was appointed Chancellor and quickly consolidated power.  
+- The Reichstag Fire and Enabling Act gave Hitler dictatorial authority.  
+
+## Government & Ideology
+- Totalitarian state led by Hitler as **Führer**.  
+- Ideology: **Nazism**, emphasizing nationalism, militarism, racial purity, and anti-Semitism.  
+- Suppressed opposition, controlled media, and promoted propaganda through Joseph Goebbels.  
+
+## Key Events
+- **1933–1939:** Consolidation of power, persecution of Jews, rearmament, territorial expansion (Austria, Czechoslovakia).  
+- **1939–1945:** World War II, beginning with the invasion of Poland.  
+- **Holocaust:** Systematic genocide of six million Jews and millions of others (Roma, disabled, political opponents).  
+- **1945:** Collapse after Allied victory; Hitler died by suicide in Berlin.  
+
+## Legacy
+- Remembered as one of history’s most destructive regimes.  
+- Its crimes against humanity led to the **Nuremberg Trials** and the establishment of international laws against genocide and war crimes.  
+- The term “Third Reich” is now synonymous with **Nazi tyranny and totalitarianism**.
