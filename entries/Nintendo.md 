@@ -1,0 +1,36 @@
+## Origins
+- Founded: **September 23, 1889** in Kyoto, Japan by **Fusajiro Yamauchi**.  
+- Began as a maker of **Hanafuda playing cards**.  
+- Shifted to toys and electronics in the mid‑20th century.  
+
+## Console History
+- **Color TV-Game (1977)** – Early home consoles in Japan.  
+- **Nintendo Entertainment System (NES, 1983/85)** – Revived the video game industry after the 1983 crash.  
+- **Super Nintendo (SNES, 1990)** – Introduced 16‑bit graphics, iconic titles like *Super Mario World*.  
+- **Nintendo 64 (1996)** – First 3D console, famous for *Super Mario 64* and *The Legend of Zelda: Ocarina of Time*.  
+- **GameCube (2001)** – Compact design, strong exclusives.  
+- **Wii (2006)** – Motion controls, sold over 100 million units.  
+- **Wii U (2012)** – Dual‑screen concept, less successful.  
+- **Nintendo Switch (2017)** – Hybrid console (portable + docked), massive success with over 130 million units sold.  
+
+## Handhelds
+- **Game Boy (1989)** – Revolutionized portable gaming.  
+- **Nintendo DS (2004)** – Dual screens, touchscreen innovation.  
+- **Nintendo 3DS (2011)** – Glasses‑free 3D gaming.  
+
+## Iconic Franchises
+- **Super Mario**  
+- **The Legend of Zelda**  
+- **Pokémon**  
+- **Donkey Kong**  
+- **Metroid**  
+- **Animal Crossing**  
+- **Smash Bros.**  
+
+## Cultural Impact
+- Nintendo shaped global gaming culture with family‑friendly, innovative experiences.  
+- Characters like **Mario, Link, Pikachu** are cultural icons.  
+- Known for creativity, accessibility, and gameplay innovation.  
+
+## Legacy
+Nintendo remains a **pillar of the gaming industry**, balancing tradition with innovation, and continues to inspire generations of players worldwide.
