@@ -17,24 +17,23 @@ import time
 
 # ============ STARTUP SYNC ============
 def startup_sync():
-    """Startup sync - fixed version"""
+    """Startup sync - optimized version"""
     if os.environ.get('RENDER') and not os.environ.get('SYNC_DONE'):
-        print("Running startup check...")
+        print("🚀 Wiki starting up...")
         
         # Create directories if they don't exist
-        import os
         os.makedirs('entries', exist_ok=True)
         os.makedirs('history', exist_ok=True)
         
-        # Try git pull but don't fail if it doesn't work
+        # Try git pull (will always return True now)
         try:
             from .storage import git_pull_latest
-            git_pull_latest()
+            git_pull_latest()  # This just prints a message now
         except Exception as e:
-            print(f"Startup sync note: {e}")
+            print(f"Startup note: {e}")
         
         os.environ['SYNC_DONE'] = '1'
-        print("Startup complete")
+        print("✅ Startup complete - ready for edits")
 
 # ============ AUTHENTICATION VIEWS ============
 def register_view(request):
