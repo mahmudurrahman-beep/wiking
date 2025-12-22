@@ -1,45 +1,30 @@
+# In encyclopedia/ai_images.py
 import requests
 import os
-import random
 
 def generate_craiyon_image(prompt):
     """
-    Simple AI image generator that always works
+    Generate AI image using Pollinations.ai API.
+    Returns a direct image URL.
     """
-    print(f"🎨 Generating image for: '{prompt}'")
-    
-    # Try Craiyon first
     try:
-        response = requests.post(
-            "https://api.craiyon.com/draw",
-            json={"prompt": prompt},
-            timeout=15
-        )
+        # 1. Clean and format the prompt
+        clean_prompt = requests.utils.quote(prompt)  # URL-encode the prompt
         
-        if response.status_code == 200:
-            data = response.json()
-            if 'images' in data:
-                return f"data:image/png;base64,{data['images'][0]}"
-    except:
-        pass
-    
-    # Fallback 1: Try Hugging Face
-    try:
-        API_URL = "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5"
-        headers = {"Authorization": "Bearer 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"}
+        # 2. Construct the Pollinations API URL
+        # You can customize the model (e.g., 'flux', 'realistic', 'anime')
+        pollinations_url = f"https://image.pollinations.ai/prompt/{clean_prompt}?width=512&height=512&model=flux&seed=1"
         
-        response = requests.post(API_URL, headers=headers, json={"inputs": prompt}, timeout=20)
+        print(f"🔄 Calling Pollinations API for: '{prompt}'")
+        print(f"🌐 URL: {pollinations_url[:80]}...")
         
-        if response.status_code == 200:
-            return f"data:image/png;base64,{response.content}"
-    except:
-        pass
-    
-    # Fallback 2: Use a placeholder service
-    placeholders = [
-        "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=512&h=512&fit=crop",
-        "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=512&h=512&fit=crop",
-        "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=512&h=512&fit=crop"
-    ]
-    
-    return random.choice(placeholders)
+        # 3. The URL *is* the image. We return it directly.
+        # Pollinations serves the image directly from this endpoint.
+        return pollinations_url
+        
+    except Exception as e:
+        print(f"❌ Error generating image: {e}")
+        # Fallback to a themed placeholder
+        import urllib.parse
+        safe_prompt = urllib.parse.quote(prompt[:30])
+        return f"https://placehold.co/512x512/4a6fa5/ffffff?text=AI+Wiki:+\n{safe_prompt}&font=montserrat"
