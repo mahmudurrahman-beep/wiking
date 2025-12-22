@@ -17,17 +17,24 @@ import time
 
 # ============ STARTUP SYNC ============
 def startup_sync():
-    """Pull latest from GitHub on startup (only once)"""
+    """Startup sync - fixed version"""
     if os.environ.get('RENDER') and not os.environ.get('SYNC_DONE'):
-        print("Running startup sync...")
+        print("Running startup check...")
+        
+        # Create directories if they don't exist
+        import os
+        os.makedirs('entries', exist_ok=True)
+        os.makedirs('history', exist_ok=True)
+        
+        # Try git pull but don't fail if it doesn't work
         try:
+            from .storage import git_pull_latest
             git_pull_latest()
         except Exception as e:
-            print(f"Git sync warning: {e}")
+            print(f"Startup sync note: {e}")
+        
         os.environ['SYNC_DONE'] = '1'
-
-# Call sync on module import
-startup_sync()
+        print("Startup complete")
 
 # ============ AUTHENTICATION VIEWS ============
 def register_view(request):
