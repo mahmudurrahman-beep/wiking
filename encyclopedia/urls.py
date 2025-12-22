@@ -16,4 +16,7 @@ urlpatterns = [
     path('random/', views.random_page, name='random_page'),
     path("history/<str:title>/", views.history, name="history"), 
     path("ai-image/", views.generate_ai_image, name="generate_ai_image"),
+    path("ai-image/", views.generate_ai_image, name="generate_ai_image"),
+    path("ai-image/process/", views.generate_ai_image_process, name="generate_ai_image_process"),
+    path("ai-image/result/", views.ai_image_result, name="ai_image_result"),
 ]
