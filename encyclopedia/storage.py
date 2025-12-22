@@ -105,69 +105,50 @@ def sync_with_github(title, content, username=""):
         print(f"GitHub sync error: {e}")
         return False
 
-# In your encyclopedia/storage.py, find the git_pull_latest() function
-# Replace it with this version:
-
+# In encyclopedia/storage.py
 def git_pull_latest():
-    """
-    Pull latest changes from GitHub, handling unstaged changes gracefully.
-    This runs on startup to ensure we have the latest content.
-    """
+    """Pull latest changes ONLY when needed (not on every startup)"""
     try:
-        # First, check if we're in a git repository
+        # Skip git operations if we're in a build/deploy environment
+        if os.environ.get('RENDER'):
+            print("⚠️  Skipping git pull during Render build/runtime")
+            return True
+            
+        # Only run git operations if .git exists
         if not os.path.exists('.git'):
             print("Not a git repository, skipping pull")
             return True
             
-        # Configure git to handle this safely
         import subprocess
         
-        # 1. Stash any local changes temporarily (save them)
-        stash_result = subprocess.run(
-            ['git', 'stash', '--include-untracked'],
+        # Save current state
+        status = subprocess.run(
+            ['git', 'status', '--porcelain'],
             capture_output=True,
             text=True,
             cwd=os.getcwd()
         )
         
-        print(f"Stash result: {stash_result.returncode}")
-        if "No local changes" not in stash_result.stderr:
-            print("✓ Stashed local changes")
-        
-        # 2. Pull the latest changes from GitHub
-        pull_result = subprocess.run(
-            ['git', 'pull', 'origin', 'main', '--rebase'],
-            capture_output=True,
-            text=True,
-            cwd=os.getcwd()
-        )
-        
-        if pull_result.returncode == 0:
-            print("✓ Successfully pulled latest from GitHub")
-            
-            # 3. Re-apply stashed changes if there were any
-            if "No local changes" not in stash_result.stderr:
-                stash_pop = subprocess.run(
-                    ['git', 'stash', 'pop'],
-                    capture_output=True,
-                    text=True,
-                    cwd=os.getcwd()
-                )
-                if stash_pop.returncode == 0:
-                    print("✓ Re-applied local changes after pull")
-                else:
-                    print(f"⚠️ Could not re-apply stashed changes: {stash_pop.stderr}")
-            
-            return True
+        # If there are no changes, we can pull safely
+        if not status.stdout.strip():
+            print("✓ Repository clean, pulling latest...")
+            result = subprocess.run(
+                ['git', 'pull', '--ff-only'],
+                capture_output=True,
+                text=True,
+                cwd=os.getcwd()
+            )
+            if result.returncode == 0:
+                print("✓ Pull successful")
+                return True
+            else:
+                print(f"⚠️  Pull failed: {result.stderr}")
+                return False
         else:
-            print(f"❌ Git pull failed: {pull_result.stderr}")
-            
-            # If pull failed, restore stashed changes
-            if "No local changes" not in stash_result.stderr:
-                subprocess.run(['git', 'stash', 'pop'], cwd=os.getcwd())
-            
+            print("⚠️  Repository has uncommitted changes, skipping pull")
+            print(f"Changes detected:\n{status.stdout}")
             return False
             
     except Exception as e:
-        print(f"❌ Error in git_pull_latest: {e}")
-        return False
+        print(f"⚠️  Git check failed (non-critical): {e}")
+        return False  # Don't crash the app on git errors
