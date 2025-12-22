@@ -326,3 +326,72 @@ def generate_ai_image(request):
             context['error'] = f"❌ Error: {str(e)}"
     
     return render(request, 'encyclopedia/ai_generated.html', context)
+# ============ AI IMAGE AJAX ENDPOINT ============
+
+@login_required
+def generate_ai_image_process(request):
+    """Process AI generation via AJAX (for async loading)"""
+    from .ai_images import generate_craiyon_image
+    
+    if request.method == "POST":
+        prompt = request.POST.get("prompt", "").strip()
+        
+        if not prompt:
+            return JsonResponse({'error': 'No prompt provided'}, status=400)
+        
+        # Rate limiting check
+        cache_key = f"ai_image_{request.user.id}"
+        count = cache.get(cache_key, 0)
+        
+        if count >= 3:
+            return JsonResponse({'error': 'Rate limit: 3 images/hour'}, status=429)
+        
+        # Generate image
+        try:
+            start_time = time.time()
+            image_url = generate_craiyon_image(prompt)
+            generation_time = time.time() - start_time
+            
+            if image_url:
+                # Update rate limit
+                cache.set(cache_key, count + 1, 3600)
+                
+                return JsonResponse({
+                    'success': True,
+                    'image_url': image_url,
+                    'prompt': prompt,
+                    'generation_time': round(generation_time, 2),
+                    'rate_limit_used': count + 1,
+                    'rate_limit_max': 3
+                })
+            else:
+                return JsonResponse({
+                    'error': 'Image generation failed. Please try a different prompt.'
+                }, status=500)
+                
+        except Exception as e:
+            print(f"AI processing error: {e}")
+            return JsonResponse({
+                'error': f'Technical error: {str(e)}'
+            }, status=500)
+    
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+def ai_image_result(request):
+    """Display AI image result (for AJAX flow)"""
+    success = request.GET.get('success') == 'true'
+    
+    if success:
+        return render(request, 'encyclopedia/ai_generated.html', {
+            'success': True,
+            'prompt': request.GET.get('prompt', ''),
+            'image_url': request.GET.get('image_url', ''),
+            'generation_time': request.GET.get('time', '0'),
+            'user': request.user
+        })
+    else:
+        return render(request, 'encyclopedia/ai_generated.html', {
+            'success': False,
+            'error': request.GET.get('error', 'Generation failed'),
+            'user': request.user
+        })
