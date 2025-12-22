@@ -1,21 +1,30 @@
 services:
   - type: web
-    name: wiki
-    runtime: python
+    name: wiki-fly
+    env: python
+    plan: free
+    region: singapore  # Closer to ap-southeast-1
     buildCommand: "./build.sh"
     startCommand: "gunicorn wiki.wsgi:application"
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: wiki-db
-          property: connectionString
+        sync: false
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
-        value: false
-      - key: WEB_CONCURRENCY
-        value: 4
-
-databases:
-  - name: wiki-db
-    plan: free
+        value: "True"
+      - key: ALLOWED_HOSTS
+        value: "wiki-fly.onrender.com"
+      - key: IMGBB_API_KEY
+        value: "cc86fd5ce0e94611637804f5b93da54c"
+      # GitHub Sync (optional)
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GITHUB_REPO_OWNER
+        value: "mahmudurrahman-beep"
+      - key: GITHUB_REPO_NAME
+        value: "wiki_fly"
+    healthCheckPath: /
+    autoDeploy: true
+    branches:
+      - main
