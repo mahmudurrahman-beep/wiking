@@ -1,13 +1,10 @@
-# encyclopedia/storage.py - COMPLETE WORKING VERSION
-"""
-Handles reading/writing markdown files and syncing with GitHub
-"""
 import os
 import requests
 import base64
 from django.conf import settings
 import subprocess
 from pathlib import Path
+from datetime import datetime 
 
 def get_entries_dir():
     """Get the path to entries directory"""
