@@ -1,3 +1,6 @@
+from django.core.cache import cache
+import time
+from .ai_images import generate_craiyon_image  
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.http import HttpResponseForbidden
@@ -263,3 +266,51 @@ def history(request, title):
         'entries': entries,
         'user': request.user
     })
+@login_required
+def generate_ai_image(request):
+    """Generate AI image from prompt and display results"""
+    context = {}
+    
+    if request.method == "POST":
+        prompt = request.POST.get("prompt", "").strip()
+        
+        if not prompt:
+            messages.error(request, "Please enter a prompt for the AI image")
+            return redirect('index')
+        
+        # Rate limiting: 3 images per hour per user
+        cache_key = f"ai_image_{request.user.id}"
+        count = cache.get(cache_key, 0)
+        
+        if count >= 3:
+            messages.error(request, "Rate limit exceeded. You can generate up to 3 images per hour.")
+            return redirect('index')
+        
+        # Generate the image
+        start_time = time.time()
+        image_url = generate_craiyon_image(prompt)
+        generation_time = time.time() - start_time
+        
+        if image_url:
+            # Increment rate limit counter
+            cache.set(cache_key, count + 1, 3600)  # 1 hour expiry
+            
+            context.update({
+                'success': True,
+                'image_url': image_url,
+                'prompt': prompt,
+                'generation_time': round(generation_time, 2),
+                'rate_limit_used': count + 1,
+                'rate_limit_max': 3,
+                'user': request.user
+            })
+        else:
+            messages.error(request, "AI image generation failed. Please try again.")
+            return redirect('index')
+    else:
+        # If GET request, show empty form
+        return render(request, 'encyclopedia/ai_generated.html', {
+            'user': request.user
+        })
+    
+    return render(request, 'encyclopedia/ai_generated.html', context)
