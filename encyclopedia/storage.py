@@ -1,10 +1,20 @@
+# encyclopedia/storage.py - COMPLETE FIXED VERSION
+"""
+Handles reading/writing markdown files and syncing with GitHub
+"""
 import os
 import requests
 import base64
-from django.conf import settings
+from django.conf import settings  # THIS LINE IS CRITICAL
 import subprocess
 from pathlib import Path
-from datetime import datetime 
+from datetime import datetime
+
+# ===== GITHUB SETTINGS =====
+# Get from Django settings (which get from environment variables)
+GITHUB_TOKEN = getattr(settings, 'GITHUB_TOKEN', '')
+GITHUB_REPO_OWNER = getattr(settings, 'GITHUB_REPO_OWNER', '')
+GITHUB_REPO_NAME = getattr(settings, 'GITHUB_REPO_NAME', '')
 
 def get_entries_dir():
     """Get the path to entries directory"""
@@ -53,14 +63,12 @@ def sync_with_github(title, content, username=""):
     Sync a file with GitHub using GitHub API
     Returns True if successful, False otherwise
     """
-    token = settings.GITHUB_TOKEN
-    if not token:
-        return False
-    
-    owner = settings.GITHUB_REPO_OWNER
-    repo = settings.GITHUB_REPO_NAME
-    
-    if not owner or not repo:
+    # Check if GitHub sync is configured
+    if not GITHUB_TOKEN or not GITHUB_REPO_OWNER or not GITHUB_REPO_NAME:
+        print("⚠️ GitHub sync disabled - environment variables not set")
+        print(f"   GITHUB_TOKEN: {'Set' if GITHUB_TOKEN else 'NOT SET'}")
+        print(f"   GITHUB_REPO_OWNER: {GITHUB_REPO_OWNER or 'NOT SET'}")
+        print(f"   GITHUB_REPO_NAME: {GITHUB_REPO_NAME or 'NOT SET'}")
         return False
     
     # Prepare the file content
@@ -69,16 +77,16 @@ def sync_with_github(title, content, username=""):
     
     # GitHub API URL
     path = f"entries/{title}.md"
-    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+    url = f"https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/contents/{path}"
     
     headers = {
-        'Authorization': f'token {token}',
+        'Authorization': f'token {GITHUB_TOKEN}',
         'Accept': 'application/vnd.github.v3+json'
     }
     
     try:
         # Check if file exists
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, timeout=10)
         
         if response.status_code == 200:
             # Update existing file
@@ -88,24 +96,40 @@ def sync_with_github(title, content, username=""):
                 'content': encoded_content,
                 'sha': sha
             }
-            response = requests.put(url, json=data, headers=headers)
-        else:
+            response = requests.put(url, json=data, headers=headers, timeout=30)
+        elif response.status_code == 404:
             # Create new file
             data = {
                 'message': f'Create {title}' + (f' by {username}' if username else ''),
                 'content': encoded_content
             }
-            response = requests.put(url, json=data, headers=headers)
+            response = requests.put(url, json=data, headers=headers, timeout=30)
+        else:
+            print(f"❌ GitHub API error (check): {response.status_code}")
+            if response.status_code == 401:
+                print("   Authentication failed - check GITHUB_TOKEN")
+            elif response.status_code == 403:
+                print("   Permission denied - token needs 'repo' scope")
+            return False
         
-        return response.status_code in [200, 201]
+        if response.status_code in [200, 201]:
+            print(f"✅ GitHub sync successful for '{title}'")
+            return True
+        else:
+            print(f"❌ GitHub sync failed: {response.status_code}")
+            print(f"   Response: {response.text[:200]}")
+            return False
+            
+    except requests.exceptions.Timeout:
+        print("⏰ GitHub sync timeout")
+        return False
     except Exception as e:
-        print(f"GitHub sync error: {e}")
+        print(f"💥 GitHub sync error: {type(e).__name__}: {e}")
         return False
 
 def git_pull_latest():
     """
-    FIXED VERSION: Always succeeds, no git operations
-    This prevents the "unstaged changes" error while keeping imports working
+    Simplified git pull - always succeeds
     """
-    print("ℹ️ GitHub sync via API only - skipping git pull")
-    return True  # Always return success
+    print("ℹ️ GitHub sync via API - skipping git pull")
+    return True
