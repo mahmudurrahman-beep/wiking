@@ -154,45 +154,5 @@
             });
         }, 5000);
     </script>
-    <script>
-// Fix for sidebar and content positioning
-document.addEventListener('DOMContentLoaded', function() {
-    // Fix sidebar position
-    const sidebar = document.querySelector('.sidebar');
-    const mainContent = document.querySelector('.main-content');
-    
-    if (sidebar) {
-        sidebar.style.position = 'fixed';
-        sidebar.style.left = '0';
-        sidebar.style.top = '0';
-        sidebar.style.bottom = '0';
-        sidebar.style.width = '250px';
-        sidebar.style.zIndex = '1000';
-    }
-    
-    if (mainContent) {
-        mainContent.style.marginLeft = '250px';
-        mainContent.style.width = 'calc(100% - 250px)';
-    }
-    
-    // Fix logo square
-    const logo = document.querySelector('.logo-img');
-    if (logo) {
-        logo.style.borderRadius = '0';
-        logo.style.width = '100px';
-        logo.style.height = '100px';
-    }
-    
-    // REMOVE THIS PART - it's causing the offset:
-    // const authPage = document.querySelector('.auth-page');
-    // if (authPage) {
-    //     authPage.style.marginLeft = '250px';
-    //     authPage.style.width = 'calc(100% - 250px)';
-    //     authPage.style.display = 'flex';
-    //     authPage.style.alignItems = 'center';
-    //     authPage.style.justifyContent = 'center';
-    // }
-});
-</script>
 </body>
 </html>
