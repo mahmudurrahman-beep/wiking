@@ -1,144 +1,189 @@
-/* 1. GLOBAL SETTINGS */
-* { box-sizing: border-box; margin: 0; padding: 0; }
+/* encyclopedia/static/encyclopedia/styles.css */
 
-body {
-    background-color: #f8fafc;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    color: #1e293b;
+/* 1. RESET & BASE */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-/* 2. LAYOUT ENGINE */
+html, body {
+    height: 100%;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #fdfdfd;
+}
+
+body {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* 2. SIDEBAR (DESKTOP) */
 .sidebar {
+    width: 280px;
+    min-width: 280px;
+    height: 100vh;
     background-color: #ffffff;
     border-right: 1px solid #e2e8f0;
-    height: 100vh;
     position: fixed;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
     z-index: 1000;
-    width: 280px;
+    /* This allows scrolling if the buttons are too many */
+    overflow-y: auto; 
+}
+
+/* Custom Scrollbar for a modern look */
+.sidebar::-webkit-scrollbar {
+    width: 5px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 10px;
 }
 
 .main-content {
     margin-left: 280px;
     flex: 1;
+    width: calc(100% - 280px);
     background: #f8fafc;
-    min-height: 100vh;
 }
 
-.content-wrapper {
-    padding: 40px;
-    max-width: 1200px;
-    margin: 0 auto;
+/* 3. SIDEBAR COMPONENTS */
+.logo-container {
+    padding: 30px 20px;
+    text-align: center;
+    border-bottom: 1px solid #f1f5f9;
 }
 
-/* 3. SIDEBAR COMPONENTS & ANIMATIONS */
 .logo-img {
-    width: 80px;
-    height: 80px;
-    border-radius: 16px;
+    width: 90px;
+    height: 90px;
     object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     margin-bottom: 12px;
-    transition: transform 0.3s ease;
 }
 
-.logo-container:hover .logo-img {
-    transform: rotate(5deg) scale(1.05);
+.search-form, .ai-search-form {
+    padding: 15px 20px 5px 20px;
 }
 
+.search-input {
+    width: 100% !important;
+    padding: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    margin-bottom: 8px !important;
+}
+
+.sidebar .btn {
+    width: 100% !important;
+    padding: 12px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    border: none !important;
+}
+
+.btn-search { background: #3b82f6 !important; color: white !important; }
+.btn-ai { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%) !important; color: white !important; }
+
+.nav-links { padding: 10px 20px; }
 .nav-link {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 15px;
-    color: #475569;
-    text-decoration: none !important;
-    border-radius: 10px;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 12px;
+    color: #4a5568;
+    text-decoration: none;
+    font-weight: 500;
+    border-radius: 8px;
+}
+.nav-link:hover { background: #f1f5f9; color: #1a202c; }
+
+/* User Section - The "Teleporting" Section */
+.user-section {
+    margin-top: auto;
+    padding: 20px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
 }
 
-.nav-link:hover {
-    background: #f1f5f9;
-    color: #0f172a;
-    transform: translateX(5px);
-}
+/* 4. MODERN CARDS */
+.content-wrapper { padding: 40px; max-width: 1200px; margin: 0 auto; }
 
-/* 4. BUTTONS & INPUTS (SYMMETRY & INTERACTION) */
-.search-input {
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 10px !important;
-    padding: 12px !important;
-    font-size: 14px !important;
-    transition: all 0.2s ease;
-}
-
-.search-input:focus {
-    border-color: #6366f1 !important;
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
-    outline: none;
-}
-
-.sidebar .btn, .btn-read, .btn-edit {
-    border-radius: 10px !important;
-    font-weight: 600 !important;
-    padding: 12px !important;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: none !important;
-}
-
-.btn:active { transform: scale(0.96) !important; }
-
-/* AI Button Magic */
-.btn-ai {
-    background: linear-gradient(135deg, #6366f1, #a855f7, #6366f1) !important;
-    background-size: 200% auto !important;
-    color: white !important;
-    animation: shine 4s linear infinite;
-}
-
-@keyframes shine {
-    to { background-position: 200% center; }
-}
-
-.btn-search { background: #3b82f6 !important; color: white !important; }
-.btn-edit { background: #10b981 !important; color: white !important; }
-.btn-read { background: #334155 !important; color: white !important; }
-
-/* 5. INDEX CARD ANIMATIONS */
 .entry-card {
     background: white;
     border: 1px solid #e2e8f0;
-    border-radius: 20px;
+    border-radius: 16px;
     padding: 25px;
-    transition: all 0.3s ease;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.entry-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+.btn-read {
+    background: #334155 !important;
+    color: white !important;
+    margin-bottom: 10px;
+    text-decoration: none;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
 }
 
-/* 6. MOBILE RESPONSIVE (TELEPORT LOGIC) */
-@media (max-width: 992px) {
-    .sidebar { width: 240px; min-width: 240px; }
-    .main-content { margin-left: 240px; }
+.btn-edit {
+    background: #10b981 !important;
+    color: white !important;
+    text-decoration: none;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
 }
 
+/* 5. MOBILE RESPONSIVE (Teleport Magic) */
 @media (max-width: 768px) {
-    body { flex-direction: column; }
+    body {
+        flex-direction: column;
+    }
+
+    .main-row {
+        display: flex !important;
+        flex-direction: column !important; /* Stack everything vertically */
+    }
+
     .sidebar {
         position: relative !important;
         width: 100% !important;
         height: auto !important;
-        display: contents; /* The Teleport Key */
+        border-right: none;
+        display: contents; /* This allows sidebar children to mix with main content children */
     }
-    .main-content { margin-left: 0 !important; order: 2; }
-    .sidebar-top-group { order: 1; background: white; border-bottom: 1px solid #e2e8f0; }
-    .user-section { order: 3 !important; margin-top: 30px; background: white; border-top: 1px solid #e2e8f0; }
+
+    .logo-container, .search-form, .ai-search-form, .nav-links {
+        order: 1; /* Keep top nav at the top */
+        background: white;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        order: 2; /* Encyclopedia entries go in the middle */
+    }
+
+    .user-section {
+        order: 3 !important; /* Login/Register go ALL the way to the bottom */
+        position: relative;
+        width: 100%;
+    }
 }
