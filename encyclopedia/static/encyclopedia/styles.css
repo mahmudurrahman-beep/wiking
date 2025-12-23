@@ -1,6 +1,6 @@
 /* encyclopedia/static/encyclopedia/styles.css */
 
-/* 1. RESET & BASE STYLES */
+/* 1. RESET & BASE */
 * {
     margin: 0;
     padding: 0;
@@ -9,8 +9,9 @@
 
 html, body {
     height: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: white;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #fdfdfd;
+    color: #2d3748;
 }
 
 body {
@@ -18,227 +19,176 @@ body {
     min-height: 100vh;
 }
 
-/* 2. THE MOBILE ORDER FIX (CONTENT FIRST) */
-@media (max-width: 768px) {
-    .main-row {
-        display: flex !important;
-        flex-direction: column-reverse !important; /* Pushes Sidebar to Bottom */
-    }
-}
-
-/* 3. SIDEBAR LAYOUT */
+/* 2. LAYOUT ENGINE */
 .sidebar {
-    width: 280px !important; 
-    min-width: 280px !important;
-    min-height: 100vh;
-    background-color: #f8f9fa;
-    border-right: 1px solid #dee2e6;
+    width: 280px;
+    min-width: 280px;
+    height: 100vh;
+    background-color: #ffffff;
+    border-right: 1px solid #e2e8f0;
     position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
     display: flex;
     flex-direction: column;
     z-index: 1000;
-    overflow-y: auto;
 }
 
-/* Logo - Fixed Square Design */
+.main-content {
+    margin-left: 280px;
+    flex: 1;
+    width: calc(100% - 280px);
+    background: #f8fafc;
+}
+
+/* 3. SIDEBAR COMPONENTS (Symmetry Fix) */
 .logo-container {
-    padding: 25px 20px;
+    padding: 30px 20px;
     text-align: center;
-    border-bottom: 1px solid #dee2e6;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #f1f5f9;
 }
 
 .logo-img {
-    width: 100px !important;
-    height: 100px !important;
-    object-fit: cover !important;
-    border-radius: 12px !important; 
-    border: 3px solid white !important;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
-    margin-bottom: 15px;
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    margin-bottom: 12px;
 }
 
-.site-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #333;
-    margin: 0;
-}
-
-/* 4. SEARCH & AI FORMS */
 .search-form, .ai-search-form {
-    padding: 10px 20px;
+    padding: 15px 20px 5px 20px;
 }
 
 .search-input {
     width: 100% !important;
-    padding: 10px 15px !important;
-    border: 1px solid #ced4da !important;
-    border-radius: 6px !important;
+    padding: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
     font-size: 14px !important;
+    margin-bottom: 8px !important;
 }
 
-/* AI MAGIC BUTTON GRADIENT */
-.btn-ai {
-    background: linear-gradient(45deg, #8a2be2, #007bff) !important;
-    color: white !important;
+/* Make Sidebar Buttons Full Width & Symmetrical */
+.sidebar .btn {
+    width: 100% !important;
+    padding: 12px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
     border: none !important;
-    transition: transform 0.2s;
+    cursor: pointer;
+    transition: transform 0.1s ease;
 }
 
-.btn-ai:hover {
-    transform: scale(1.05);
-    color: white !important;
+.sidebar .btn:active {
+    transform: scale(0.98);
 }
 
-/* Navigation Links */
-.nav-links {
-    padding: 20px;
-    border-bottom: 1px solid #dee2e6;
-}
+.btn-search { background: #3b82f6 !important; color: white !important; }
+.btn-ai { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%) !important; color: white !important; }
 
+/* Nav Links */
+.nav-links { padding: 10px 20px; }
 .nav-link {
-    display: block;
-    padding: 10px 0;
-    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    color: #4a5568;
     text-decoration: none;
-    font-size: 15px;
-    transition: 0.2s;
+    font-weight: 500;
+    border-radius: 8px;
 }
 
-.nav-link:hover {
-    color: #007bff;
-    padding-left: 5px;
-}
+.nav-link:hover { background: #f1f5f9; color: #1a202c; }
 
-/* 5. USER SECTION (SIDEBAR BOTTOM) */
+/* User Section (Moves to bottom on mobile) */
 .user-section {
-    padding: 20px;
     margin-top: auto;
-    background-color: #f1f3f4;
-    border-top: 1px solid #dee2e6;
+    padding: 20px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
 }
 
-/* 6. MAIN CONTENT AREA */
-.main-content {
-    margin-left: 280px !important; 
-    flex: 1;
-    min-height: 100vh;
+/* 4. MODERN CARDS (Read/Edit Modern Colors) */
+.content-wrapper { padding: 40px; max-width: 1200px; margin: 0 auto; }
+
+.entry-card {
     background: white;
-    width: calc(100% - 280px);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.content-wrapper {
-    padding: 30px;
-    max-width: 1200px;
-    margin: 0 auto;
+/* Modern Slate and Emerald Buttons */
+.btn-read {
+    background: #334155 !important; /* Slate Blue-Gray */
+    color: white !important;
+    margin-bottom: 10px;
+    text-decoration: none;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
 }
 
-/* 7. AUTH PAGES (LOGIN/REGISTER) */
+.btn-edit {
+    background: #10b981 !important; /* Emerald Green */
+    color: white !important;
+    text-decoration: none;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+/* 5. AUTH PAGES */
 .auth-page {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    min-height: 80vh; /* Better centering */
+    min-height: 80vh;
 }
 
 .auth-card {
     width: 100%;
     max-width: 450px;
     background: white;
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
     padding: 40px;
-    border: 1px solid #edf2f7;
+    border-radius: 20px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-.auth-title {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: #2d3748;
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-.auth-page .form-control {
-    width: 100% !important;
-    padding: 12px 16px !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 10px !important;
-    margin-bottom: 0px; /* Overriding old margin */
-}
-
-.auth-page .btn {
-    width: 100%;
-    padding: 14px;
-    border-radius: 10px;
-    font-weight: 600;
-    margin-top: 10px;
-}
-
-.btn-outline {
-    background: transparent !important;
-    color: #007bff !important;
-    border: 1px solid #007bff !important;
-}
-
-/* 8. ENTRY CARDS (INDEX PAGE) */
-.entry-card {
-    border: 1px solid #dee2e6;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    background: #fff;
-    transition: 0.2s;
-}
-
-.entry-card:hover {
-    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
-}
-
-/* AI Image Container */
-.generated-image-container {
-    border: 2px solid #dee2e6;
-    border-radius: 12px;
-    padding: 20px;
-    background: #f8f9fa;
-    margin: 20px 0;
-    text-align: center;
-}
-
-.generated-image-container img {
-    max-width: 100%;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-/* 9. MOBILE RESPONSIVE OVERRIDES */
+/* 6. MOBILE RESPONSIVE FLOW */
 @media (max-width: 768px) {
+    body { flex-direction: column; }
+
     .sidebar {
-        position: relative !important;
+        position: relative;
         width: 100% !important;
-        min-width: 100% !important;
-        height: auto !important;
-        min-height: auto !important;
+        height: auto;
         border-right: none;
-        border-top: 1px solid #dee2e6;
+        border-bottom: 1px solid #e2e8f0;
     }
-    
+
     .main-content {
         margin-left: 0 !important;
         width: 100% !important;
-    }
-    
-    .logo-container {
-        padding: 15px; /* Smaller padding on mobile */
+        display: flex;
+        flex-direction: column;
     }
 
-    .logo-img {
-        width: 70px !important;
-        height: 70px !important;
+    /* Move Login section to the bottom of everything on mobile */
+    .user-section {
+        order: 10; 
     }
 }
