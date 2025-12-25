@@ -1,0 +1,46 @@
+# Mount Kilimanjaro.md
+
+## Introduction
+**Mount Kilimanjaro** is the highest mountain in Africa, standing at **5,895 meters (19,341 feet)** above sea level. It is a free‑standing volcanic massif located in **Tanzania**, near the border with Kenya. Kilimanjaro is one of the world’s most iconic peaks and a popular destination for climbers and adventurers.
+
+## History / Origins
+- Formed by volcanic activity around **3 million years ago**.  
+- Composed of three volcanic cones: **Kibo** (dormant), **Mawenzi**, and **Shira** (extinct).  
+- First recorded ascent: **1889** by Hans Meyer (Germany) and Ludwig Purtscheller (Austria).  
+- Revered in local Chagga culture and featured in global literature, including Ernest Hemingway’s *The Snows of Kilimanjaro*.  
+
+## Key Features
+- **Height**: 5,895 m (19,341 ft) — Africa’s tallest peak.  
+- **Volcanic Cones**:  
+  - **Kibo** – highest summit, Uhuru Peak.  
+  - **Mawenzi** – rugged, steep peak.  
+  - **Shira** – eroded plateau.  
+- **Climate Zones**:  
+  - Cultivation zone (farmlands).  
+  - Rainforest.  
+  - Heath and moorland.  
+  - Alpine desert.  
+  - Arctic summit.  
+- **Wildlife**: Elephants, leopards, monkeys, and diverse bird species inhabit lower slopes.  
+- **Climbing Routes**: Marangu, Machame, Lemosho, Rongai, Shira, Umbwe.  
+
+## Legacy / Impact
+- Symbol of African natural heritage and resilience.  
+- Attracts ~30,000 climbers annually.  
+- Glaciers on Kilimanjaro are rapidly retreating due to **climate change**, raising concerns about their disappearance within decades.  
+- UNESCO World Heritage Site since **1987**.  
+
+## Fun Fact 🌟
+Mount Kilimanjaro is the **tallest free‑standing mountain in the world**, meaning it is not part of a mountain range.
+
+---
+
+## See also
+- [Volcano](https://en.wikipedia.org/wiki/Volcano)  
+- [Seven Summits](https://en.wikipedia.org/wiki/Seven_Summits)  
+- [Tanzania](https://en.wikipedia.org/wiki/Tanzania)  
+
+## References
+- [Wikipedia – Mount Kilimanjaro](https://en.wikipedia.org/wiki/Mount_Kilimanjaro)  
+- [Britannica – Kilimanjaro](https://www.britannica.com/place/Kilimanjaro)  
+- [National Geographic – Kilimanjaro](https://www.nationalgeographic.com/travel/article/mount-kilimanjaro)
