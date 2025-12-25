@@ -1,25 +1,36 @@
+"""
+Django settings for wiki project.
+Optimized for Render.com + Supabase
+"""
 import sys
 import os
 from pathlib import Path
 import dj_database_url
 from django.contrib.messages import constants as messages
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ====== SECURITY SETTINGS ======
-# Uses your 50-char string from environment; provides a fallback for build phase
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-build-fallback-1234567890-random-string')
-
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-this-in-production-123456')
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-# ====== HOST & CSRF CONFIGURATION ======
-# Converts "wiking.koyeb.app,localhost" into ['wiking.koyeb.app', 'localhost']
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'wiking.koyeb.app,localhost,127.0.0.1').split(',')
+# ====== HOST CONFIGURATION ======
+ALLOWED_HOSTS = []
 
-# Converts "https://wiking.koyeb.app" into ['https://wiking.koyeb.app']
-csrf_env = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://wiking.koyeb.app')
-CSRF_TRUSTED_ORIGINS = csrf_env.split(',')
+# Render host
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+    CSRF_TRUSTED_ORIGINS = [f'https://{RENDER_EXTERNAL_HOSTNAME}']
+
+# For development
+if DEBUG:
+    ALLOWED_HOSTS.extend(['localhost', '127.0.0.1', '[::1]'])
+
+# Allow all temporarily for testing
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['*']
 
 # ====== APPLICATION DEFINITION ======
 INSTALLED_APPS = [
@@ -28,14 +39,13 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic', # Better static handling
     'django.contrib.staticfiles',
-    'encyclopedia', 
+    'encyclopedia',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', 
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -49,7 +59,7 @@ ROOT_URLCONF = 'wiki.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -65,6 +75,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'wiki.wsgi.application'
 
 # ====== DATABASE CONFIGURATION ======
+# Use DATABASE_URL from environment, fallback to SQLite for local dev
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
     DATABASES = {
@@ -78,35 +89,91 @@ else:
         }
     }
 
-# ====== STATIC FILES (WhiteNoise) ======
+# ====== PASSWORD VALIDATION ======
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
+
+# ====== INTERNATIONALIZATION ======
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'UTC'
+USE_I18N = True
+USE_TZ = True
+
+# ====== STATIC FILES ======
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-# Use this storage for maximum stability on Koyeb
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-
-# Ensure 'encyclopedia/static' exists in your repo
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATICFILES_DIRS = [BASE_DIR / 'encyclopedia' / 'static']
 
-# ====== PRODUCTION SECURITY (Crucial for Koyeb) ======
+# ====== DEFAULT PRIMARY KEY ======
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ====== AUTHENTICATION ======
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+# ====== MESSAGES ======
+MESSAGE_TAGS = {
+    messages.DEBUG: 'secondary',
+    messages.INFO: 'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
+    messages.ERROR: 'danger',
+}
+
+# ====== CACHE ======
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
+# ====== APP SPECIFIC SETTINGS ======
+# GitHub Sync
+GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
+GITHUB_REPO_OWNER = os.environ.get('GITHUB_REPO_OWNER', '')
+GITHUB_REPO_NAME = os.environ.get('GITHUB_REPO_NAME', '')
+
+# AI Images
+IMGBB_API_KEY = os.environ.get('IMGBB_API_KEY', '')
+
+# ====== PRODUCTION SECURITY ======
 if not DEBUG:
-    # This tells Django that Koyeb is handling the HTTPS
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    
     SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+    SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
     SECURE_REFERRER_POLICY = 'same-origin'
 
-# ====== GITHUB & API SETTINGS ======
-GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
-GITHUB_REPO_OWNER = os.environ.get('GITHUB_REPO_OWNER', '')
-GITHUB_REPO_NAME = os.environ.get('GITHUB_REPO_NAME', '')
-
-# (Keep your remaining Password Validators / Internationalization settings here)
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+if 'runserver' in sys.argv or 'migrate' in sys.argv:
+    print("=" * 60)
+    print("DEBUG: Checking imports...")
+    
+    try:
+        from encyclopedia import views
+        print("✅ Successfully imported views")
+        
+        # Check for required attributes
+        required = ['generate_ai_image', 'generate_ai_image_process', 'ai_image_result']
+        for attr in required:
+            if hasattr(views, attr):
+                print(f"✅ Found: {attr}")
+            else:
+                print(f"❌ Missing: {attr}")
+                
+    except Exception as e:
+        print(f"❌ Import error: {e}")
+    
+    print("=" * 60)
