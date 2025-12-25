@@ -1,6 +1,6 @@
 """
 Django settings for wiki project.
-Optimized for Render.com + Supabase
+Optimized for Koyeb + Supabase/PostgreSQL
 """
 import sys
 import os
@@ -13,24 +13,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ====== SECURITY SETTINGS ======
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-this-in-production-123456')
+# Ensure DEBUG is set to False in production environment variables
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-# ====== HOST CONFIGURATION ======
+# ====== HOST CONFIGURATION FOR KOYEB ======
 ALLOWED_HOSTS = []
-
-# Render host
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-    CSRF_TRUSTED_ORIGINS = [f'https://{RENDER_EXTERNAL_HOSTNAME}']
 
 # For development
 if DEBUG:
     ALLOWED_HOSTS.extend(['localhost', '127.0.0.1', '[::1]'])
 
-# Allow all temporarily for testing
+# Allow all hosts in production on Koyeb (Simplest approach)
+# Koyeb manages ingress internally.
 if not ALLOWED_HOSTS:
     ALLOWED_HOSTS = ['*']
+
+# CSRF_TRUSTED_ORIGINS can remain empty unless you are using specific custom domains
+CSRF_TRUSTED_ORIGINS = []
 
 # ====== APPLICATION DEFINITION ======
 INSTALLED_APPS = [
@@ -38,14 +37,15 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Moved up for static file serving
     'encyclopedia',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -135,18 +135,18 @@ CACHES = {
 }
 
 # ====== APP SPECIFIC SETTINGS ======
-# GitHub Sync
+# GitHub Sync - Environment variables are expected to be set on the platform
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
 GITHUB_REPO_OWNER = os.environ.get('GITHUB_REPO_OWNER', '')
 GITHUB_REPO_NAME = os.environ.get('GITHUB_REPO_NAME', '')
 
-# AI Images
+# AI Images - Environment variable IMGBB_API_KEY can be left empty if not used
 IMGBB_API_KEY = os.environ.get('IMGBB_API_KEY', '')
 
-# ====== PRODUCTION SECURITY ======
+# ====== PRODUCTION SECURITY (Ensures secure settings when DEBUG is False) ======
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    # Note: Koyeb handles SSL/HTTPS termination automatically, no proxy config needed
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 31536000
