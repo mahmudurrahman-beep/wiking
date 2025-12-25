@@ -13,23 +13,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ====== SECURITY SETTINGS ======
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-this-in-production-123456')
-# Ensure DEBUG is set to False in production environment variables
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 # ====== HOST CONFIGURATION FOR KOYEB ======
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 # For development
 if DEBUG:
     ALLOWED_HOSTS.extend(['localhost', '127.0.0.1', '[::1]'])
 
-# Allow all hosts in production on Koyeb (Simplest approach)
-# Koyeb manages ingress internally.
-if not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ['*']
-
-# CSRF_TRUSTED_ORIGINS can remain empty unless you are using specific custom domains
-CSRF_TRUSTED_ORIGINS = []
+CSRF_TRUSTED_ORIGINS = [os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://*.koyeb.app')]
 
 # ====== APPLICATION DEFINITION ======
 INSTALLED_APPS = [
@@ -37,15 +30,14 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # Moved up for static file serving
-    'encyclopedia',
+    'encyclopedia',  # Your local app
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Best practice: Right under SecurityMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -59,7 +51,7 @@ ROOT_URLCONF = 'wiki.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -75,7 +67,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'wiki.wsgi.application'
 
 # ====== DATABASE CONFIGURATION ======
-# Use DATABASE_URL from environment, fallback to SQLite for local dev
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
     DATABASES = {
@@ -106,7 +97,11 @@ USE_TZ = True
 # ====== STATIC FILES ======
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# WhiteNoise Configuration for Koyeb/Heroku
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Ensure this directory exists or remove if not using a project-level static folder
 STATICFILES_DIRS = [BASE_DIR / 'encyclopedia' / 'static']
 
 # ====== DEFAULT PRIMARY KEY ======
@@ -135,45 +130,34 @@ CACHES = {
 }
 
 # ====== APP SPECIFIC SETTINGS ======
-# GitHub Sync - Environment variables are expected to be set on the platform
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
 GITHUB_REPO_OWNER = os.environ.get('GITHUB_REPO_OWNER', '')
 GITHUB_REPO_NAME = os.environ.get('GITHUB_REPO_NAME', '')
-
-# AI Images - Environment variable IMGBB_API_KEY can be left empty if not used
 IMGBB_API_KEY = os.environ.get('IMGBB_API_KEY', '')
 
-# ====== PRODUCTION SECURITY (Ensures secure settings when DEBUG is False) ======
+# ====== PRODUCTION SECURITY ======
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
-    # Note: Koyeb handles SSL/HTTPS termination automatically, no proxy config needed
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-    SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
     SECURE_REFERRER_POLICY = 'same-origin'
 
+# ====== DEBUG HELPER ======
 if 'runserver' in sys.argv or 'migrate' in sys.argv:
     print("=" * 60)
     print("DEBUG: Checking imports...")
-    
     try:
         from encyclopedia import views
         print("✅ Successfully imported views")
-        
-        # Check for required attributes
         required = ['generate_ai_image', 'generate_ai_image_process', 'ai_image_result']
         for attr in required:
-            if hasattr(views, attr):
-                print(f"✅ Found: {attr}")
-            else:
-                print(f"❌ Missing: {attr}")
-                
+            status = "✅ Found" if hasattr(views, attr) else "❌ Missing"
+            print(f"{status}: {attr}")
     except Exception as e:
         print(f"❌ Import error: {e}")
-    
     print("=" * 60)
