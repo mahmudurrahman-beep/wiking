@@ -9,7 +9,7 @@
         AI Image Generated
     </h1>
     
-    <!-- Search Form (for generating another) -->
+    <!-- Search Form -->
     <div class="card mb-4">
         <div class="card-body">
             <form action="{% url 'generate_ai_image' %}" method="post">
@@ -35,7 +35,6 @@
             const GENERATED_IMAGE_URL = "{{ image_url|escapejs }}";
             const GENERATED_PROMPT = "{{ prompt|escapejs }}";
             const GENERATED_PROMPT_SLUG = "{{ prompt|slugify|escapejs }}";
-            const GENERATION_TIME = {{ generation_time|default:0 }};
         </script>
         
         <div class="alert alert-success">
@@ -47,54 +46,38 @@
             </p>
         </div>
         
-        <!-- Generated Image Display -->
+        <!-- Generated Image Display - SIMPLIFIED -->
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Your Generated Image</h5>
                 <span class="badge bg-info">
-                    <i class="fas fa-clock me-1"></i>Temporary (2 weeks)
+                    <i class="fas fa-image me-1"></i>Ready
                 </span>
             </div>
             <div class="card-body text-center">
                 <!-- Loading Spinner -->
-                <div id="image-loading-spinner" class="mb-4">
+                <div id="image-loading-spinner" class="mb-4" style="display: none;">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading image...</span>
                     </div>
                     <p class="mt-2 text-muted">Loading your generated image...</p>
-                    <div class="progress mt-3" style="height: 6px;">
-                        <div id="loading-progress" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
-                    </div>
                 </div>
                 
-                <!-- The Actual Image -->
-                <div id="image-container" style="display: none;">
-                    <div class="position-relative d-inline-block">
-                        <img src="{{ image_url }}" 
-                             alt="AI generated image: {{ prompt }}"
-                             class="img-fluid rounded shadow mb-3"
-                             id="ai-generated-image"
-                             style="max-height: 500px; max-width: 100%;"
-                             crossorigin="anonymous"  <!-- CORS FIX -->
-                             loading="eager">
-                        <!-- Image Overlay Controls -->
-                        <div class="position-absolute top-0 end-0 m-2">
-                            <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-sm btn-light border" onclick="zoomImage(1.2)">
-                                    <i class="fas fa-search-plus"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-light border" onclick="zoomImage(1)">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                <!-- The Actual Image - SIMPLE VERSION -->
+                <div id="image-container">
+                    <img src="{{ image_url }}" 
+                         alt="AI generated image: {{ prompt }}"
+                         class="img-fluid rounded shadow mb-3"
+                         id="ai-generated-image"
+                         style="max-height: 500px; max-width: 100%;"
+                         onload="imageLoaded()"
+                         onerror="imageFailed()">
                 </div>
                 
-                <!-- Error Message with CORS fix options -->
+                <!-- Error Message -->
                 <div id="image-error" class="alert alert-danger mb-4" style="display: none;">
                     <i class="fas fa-exclamation-triangle me-2"></i>
-                    <span id="error-message">Image failed to load due to security restrictions.</span>
+                    <span id="error-message">Image failed to load. Try opening in new tab.</span>
                     <div class="mt-2">
                         <button onclick="retryImageLoad()" class="btn btn-sm btn-outline-danger me-2">
                             <i class="fas fa-redo me-1"></i>Retry
@@ -105,263 +88,57 @@
                     </div>
                 </div>
                 
-                <!-- Alternative Image Loading Method -->
-                <div id="proxy-loading" class="alert alert-info mb-4" style="display: none;">
-                    <i class="fas fa-sync-alt fa-spin me-2"></i>
-                    <span>Trying alternative loading method...</span>
-                </div>
-                
                 <!-- Action Buttons -->
                 <div class="d-flex flex-wrap gap-2 justify-content-center mt-4">
-                    <!-- 1. PRIMARY ACTION: Save Locally -->
-                    <button id="download-btn" class="btn btn-success" disabled onclick="downloadImage()">
+                    <button id="download-btn" class="btn btn-success" onclick="downloadImage()">
                         <i class="fas fa-download me-2"></i>Save Image to Device
                     </button>
                     
-                    <!-- 2. Open in New Tab -->
                     <button id="open-tab-btn" class="btn btn-outline-info" onclick="openImageInNewTab()">
                         <i class="fas fa-external-link-alt me-2"></i>Open in New Tab
                     </button>
                     
-                    <!-- 3. SECONDARY: Generate Another -->
                     <a href="{% url 'generate_ai_image' %}" class="btn btn-outline-primary">
                         <i class="fas fa-redo me-2"></i>Generate Another
                     </a>
                 </div>
                 
-                <!-- Image Info -->
-                <div class="row mt-4 text-center text-muted small">
-                    <div class="col-md-4 mb-2">
-                        <i class="fas fa-image me-1"></i>
-                        <span id="image-dimensions">512×512 pixels</span>
-                    </div>
-                    <div class="col-md-4 mb-2">
-                        <i class="fas fa-clock me-1"></i>
-                        Generated: <span id="generation-time">{{ generation_time }}</span>s ago
-                    </div>
-                    <div class="col-md-4 mb-2">
-                        <i class="fas fa-link me-1"></i>
-                        <button class="btn btn-link p-0 text-muted" onclick="copyImageUrl()" style="text-decoration: none;">
-                            Copy URL
-                        </button>
-                    </div>
-                </div>
-                
                 <!-- Clear Warning -->
                 <div class="alert alert-warning mt-4">
-                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Important Notice</h6>
-                    <p class="mb-2">
-                        This image is <strong>temporarily hosted</strong> and may be removed in approximately 2 weeks.
-                    </p>
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Image Preview</h6>
                     <p class="mb-0">
-                        <strong>To keep this image permanently:</strong> Use the <i>"Save Image to Device"</i> button above, 
-                        then manually upload it to your wiki page if needed.
+                        This is a preview of your AI-generated image based on: <strong>"{{ prompt }}"</strong>
                     </p>
                 </div>
             </div>
         </div>
         
-        <!-- JavaScript with CORS handling -->
+        <!-- Simple JavaScript -->
         <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const img = document.getElementById('ai-generated-image');
-            const spinner = document.getElementById('image-loading-spinner');
-            const container = document.getElementById('image-container');
-            const errorDiv = document.getElementById('image-error');
-            const proxyLoading = document.getElementById('proxy-loading');
-            const downloadBtn = document.getElementById('download-btn');
-            const progressBar = document.getElementById('loading-progress');
-            
-            let loadAttempts = 0;
-            const maxAttempts = 3;
-            let imageLoaded = false;
-            
-            // Simulate loading progress
-            let progress = 0;
-            const progressInterval = setInterval(() => {
-                progress += 10;
-                if (progressBar) progressBar.style.width = progress + '%';
-                
-                if (progress >= 90) {
-                    clearInterval(progressInterval);
-                }
-            }, 300);
-            
-            // Handle successful image load
-            img.onload = function() {
-                imageLoaded = true;
-                clearInterval(progressInterval);
-                if (progressBar) progressBar.style.width = '100%';
-                
-                setTimeout(() => {
-                    spinner.style.display = 'none';
-                    container.style.display = 'block';
-                    proxyLoading.style.display = 'none';
-                    downloadBtn.disabled = false;
-                    
-                    // Update image info
-                    updateImageInfo(img);
-                    
-                    // Complete progress bar
-                    if (progressBar) {
-                        progressBar.classList.remove('progress-bar-animated');
-                        progressBar.classList.remove('progress-bar-striped');
-                    }
-                }, 500);
-            };
-            
-            // Handle image loading errors (CORS errors)
-            img.onerror = function() {
-                loadAttempts++;
-                
-                // Update error message based on attempt
-                document.getElementById('error-message').textContent = 
-                    `Image loading failed (Attempt ${loadAttempts}/${maxAttempts}). ` +
-                    `This is usually due to security restrictions.`;
-                
-                if (loadAttempts < maxAttempts) {
-                    // Try different loading strategies
-                    setTimeout(() => {
-                        console.log(`Retry ${loadAttempts}/${maxAttempts}...`);
-                        
-                        if (loadAttempts === 1) {
-                            // First retry: Try adding cache busting parameter
-                            img.src = GENERATED_IMAGE_URL + '&t=' + Date.now();
-                        } else if (loadAttempts === 2) {
-                            // Second retry: Try using a CORS proxy
-                            tryProxyLoad();
-                        }
-                    }, 1000 * loadAttempts);
-                } else {
-                    // All attempts failed
-                    clearInterval(progressInterval);
-                    spinner.style.display = 'none';
-                    errorDiv.style.display = 'block';
-                    proxyLoading.style.display = 'none';
-                }
-            };
-            
-            // Try loading through a CORS proxy
-            function tryProxyLoad() {
-                proxyLoading.style.display = 'block';
-                errorDiv.style.display = 'none';
-                
-                // Use a CORS proxy service
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(GENERATED_IMAGE_URL)}`;
-                
-                // Create a new image element to test
-                const testImg = new Image();
-                testImg.crossOrigin = "anonymous";
-                
-                testImg.onload = function() {
-                    // Proxy worked, update main image
-                    img.src = proxyUrl;
-                };
-                
-                testImg.onerror = function() {
-                    // Proxy also failed
-                    proxyLoading.style.display = 'none';
-                    errorDiv.style.display = 'block';
-                    document.getElementById('error-message').textContent = 
-                        "Unable to load image due to security restrictions. Please try opening in a new tab.";
-                };
-                
-                testImg.src = proxyUrl;
-            }
-            
-            // Start loading the image
-            img.src = GENERATED_IMAGE_URL;
-            
-            // Auto-retry after 5 seconds if still loading
-            setTimeout(function() {
-                if (!imageLoaded && loadAttempts === 0) {
-                    console.log("Auto-retrying image load...");
-                    img.src = GENERATED_IMAGE_URL + '&t=' + Date.now();
-                }
-            }, 5000);
-            
-            // Update generation time
-            updateGenerationTime();
-            setInterval(updateGenerationTime, 60000);
-        });
-        
-        function updateImageInfo(img) {
-            // Update dimensions
-            const dimensions = document.getElementById('image-dimensions');
-            if (dimensions && img.naturalWidth) {
-                dimensions.textContent = `${img.naturalWidth} × ${img.naturalHeight} pixels`;
-            }
+        function imageLoaded() {
+            console.log("Image loaded successfully!");
+            document.getElementById('download-btn').disabled = false;
         }
         
-        function updateGenerationTime() {
-            const element = document.getElementById('generation-time');
-            if (element && GENERATION_TIME) {
-                const minutes = Math.floor((Date.now()/1000 - GENERATION_TIME) / 60);
-                if (minutes === 0) {
-                    element.textContent = 'just now';
-                } else if (minutes === 1) {
-                    element.textContent = '1 minute ago';
-                } else {
-                    element.textContent = `${minutes} minutes ago`;
-                }
-            }
+        function imageFailed() {
+            console.log("Image failed to load");
+            document.getElementById('image-error').style.display = 'block';
         }
         
         function retryImageLoad() {
+            document.getElementById('image-error').style.display = 'none';
             const img = document.getElementById('ai-generated-image');
-            const spinner = document.getElementById('image-loading-spinner');
-            const errorDiv = document.getElementById('image-error');
-            const container = document.getElementById('image-container');
-            const proxyLoading = document.getElementById('proxy-loading');
-            
-            errorDiv.style.display = 'none';
-            proxyLoading.style.display = 'none';
-            container.style.display = 'none';
-            spinner.style.display = 'block';
-            
-            // Reset progress bar
-            const progressBar = document.getElementById('loading-progress');
-            if (progressBar) {
-                progressBar.style.width = '0%';
-                progressBar.classList.add('progress-bar-animated');
-                progressBar.classList.add('progress-bar-striped');
-            }
-            
-            // Try direct load first
-            img.src = GENERATED_IMAGE_URL + '&t=' + Date.now();
+            img.src = GENERATED_IMAGE_URL + '&t=' + new Date().getTime();
         }
         
         function openImageInNewTab() {
             window.open(GENERATED_IMAGE_URL, '_blank');
-            
-            // Visual feedback
-            const btn = document.getElementById('open-tab-btn');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-check me-2"></i>Opened!';
-            btn.classList.remove('btn-outline-info');
-            btn.classList.add('btn-info');
-            
-            setTimeout(() => {
-                btn.innerHTML = originalHTML;
-                btn.classList.remove('btn-info');
-                btn.classList.add('btn-outline-info');
-            }, 2000);
-        }
-        
-        function zoomImage(scale) {
-            const img = document.getElementById('ai-generated-image');
-            img.style.transform = `scale(${scale})`;
-            img.style.transition = 'transform 0.3s ease';
         }
         
         function downloadImage() {
-            // Create a temporary anchor element
             const link = document.createElement('a');
             link.href = GENERATED_IMAGE_URL;
             link.download = 'ai-wiki-' + GENERATED_PROMPT_SLUG + '.png';
-            link.target = '_blank';
-            
-            // Add to page, click, and remove
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -372,50 +149,17 @@
             btn.innerHTML = '<i class="fas fa-check me-2"></i>Saved!';
             btn.classList.remove('btn-success');
             btn.classList.add('btn-secondary');
-            btn.disabled = true;
             
             setTimeout(() => {
                 btn.innerHTML = originalHTML;
                 btn.classList.remove('btn-secondary');
                 btn.classList.add('btn-success');
-                btn.disabled = false;
             }, 2000);
-        }
-        
-        function copyImageUrl() {
-            navigator.clipboard.writeText(GENERATED_IMAGE_URL).then(() => {
-                // Show a small toast notification
-                const toast = document.createElement('div');
-                toast.className = 'position-fixed bottom-0 end-0 p-3';
-                toast.style.zIndex = '11';
-                toast.innerHTML = `
-                    <div class="toast show" role="alert">
-                        <div class="toast-header">
-                            <i class="fas fa-check text-success me-2"></i>
-                            <strong class="me-auto">Copied!</strong>
-                            <button type="button" class="btn-close" onclick="this.parentElement.parentElement.parentElement.remove()"></button>
-                        </div>
-                        <div class="toast-body">
-                            Image URL copied to clipboard
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(toast);
-                
-                // Auto-remove after 3 seconds
-                setTimeout(() => {
-                    if (toast.parentElement) {
-                        toast.parentElement.removeChild(toast);
-                    }
-                }, 3000);
-            }).catch(err => {
-                alert('Failed to copy URL: ' + err);
-            });
         }
         </script>
         
     {% else %}
-        <!-- Initial state (no generation yet) -->
+        <!-- Initial state -->
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">How to Use</h5>
@@ -427,65 +171,35 @@
                     <li><em>"watercolor painting of a mountain landscape"</em></li>
                     <li><em>"cyberpunk street market at night"</em></li>
                 </ul>
-                
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle me-2"></i>
-                    <strong>Note:</strong> Some images may fail to load due to security restrictions. 
-                    If this happens, use the "Open in New Tab" button to view the image.
-                </div>
-                
-                <div class="row mt-4">
-                    <div class="col-md-6">
-                        <div class="card border-primary">
-                            <div class="card-body">
-                                <h6><i class="fas fa-lightbulb text-warning me-2"></i>Tips for Better Results</h6>
-                                <ul class="small mb-0">
-                                    <li>Be specific with details</li>
-                                    <li>Include colors and style</li>
-                                    <li>Add background descriptions</li>
-                                    <li>Specify lighting conditions</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card border-success">
-                            <div class="card-body">
-                                <h6><i class="fas fa-shield-alt text-success me-2"></i>Security Notice</h6>
-                                <p class="small mb-0">Images are loaded from external services. If you see loading errors, 
-                                use the provided buttons to access the image directly.</p>
-                            </div>
-                        </div>
-                    </div>
+                    <strong>Note:</strong> Generated images are temporarily available. 
+                    Please save them to your device if you want to keep them permanently.
                 </div>
             </div>
         </div>
     {% endif %}
 </div>
 
-<!-- Additional CSS for this page -->
+<!-- Additional CSS -->
 <style>
 #ai-generated-image {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    cursor: zoom-in;
+    border: 3px solid;
+    border-image: linear-gradient(45deg, #3b82f6, #8b5cf6) 1;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
 }
 
 #ai-generated-image:hover {
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    transform: scale(1.02);
 }
 
-.toast {
-    background: white;
-    border: 1px solid #dee2e6;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+.btn {
+    min-width: 200px;
 }
 
 @media (max-width: 768px) {
-    .d-flex.flex-wrap.gap-2 {
-        flex-direction: column;
-    }
-    
-    .d-flex.flex-wrap.gap-2 .btn {
+    .btn {
         width: 100%;
         margin-bottom: 10px;
     }
