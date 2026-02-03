@@ -4,93 +4,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Wiki{% endblock %}</title>
+    <title>{% block title %}Quantum Wiki{% endblock %}</title>
     
     <!-- Favicon Configuration -->
     <link rel="icon" href="{% static 'encyclopedia/icons/favicon.ico' %}" sizes="any">
     <link rel="icon" href="{% static 'encyclopedia/icons/favicon.svg' %}" type="image/svg+xml">
     <link rel="apple-touch-icon" href="{% static 'encyclopedia/icons/apple-touch-icon.png' %}">
     <link rel="manifest" href="{% static 'encyclopedia/icons/site.webmanifest' %}">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#1e293b">
     
     <!-- CSS Imports -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="{% static 'encyclopedia/styles.css' %}" rel="stylesheet">
 </head>
 <body>
     <div class="container-fluid p-0">
         <div class="row g-0 main-row">
             
+            <!-- Enhanced Sidebar -->
             <div class="sidebar">
                 
                 <div class="sidebar-top-group">
+                    <!-- Updated Logo Section -->
                     <div class="logo-container">
                         <a href="{% url 'index' %}" class="text-decoration-none">
-                            <img src="{% static 'encyclopedia/logo.jpg' %}" alt="Wiki Logo" class="logo-img">
-                            <h2 class="fs-4 fw-bold text-dark m-0">উইকি(Wiki)</h2>
+                            <div class="logo-wrapper">
+                                <div class="logo-circle">
+                                    <i class="fas fa-atom logo-icon"></i>
+                                </div>
+                                <h2 class="logo-text">Quantum<span class="logo-accent">Wiki</span></h2>
+                                <p class="logo-tagline">Knowledge Collective</p>
+                            </div>
                         </a>
                     </div>
 
-                    <div class="p-3">
-                        <form action="{% url 'search' %}" method="get" class="mb-3">
-                            <input class="search-input" type="text" name="q" placeholder="Search Encyclopedia">
-                            <button class="btn btn-search" type="submit">
-                                <i class="fas fa-search"></i> Search
-                            </button>
-                        </form>
+                    <!-- Search & AI Section -->
+                    <div class="search-section p-4">
+                        <div class="search-group mb-4">
+                            <div class="input-group search-input-wrapper">
+                                <span class="input-group-text search-icon">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" name="q" placeholder="Search Encyclopedia..." 
+                                       class="form-control search-input" id="wiki-search">
+                                <button class="btn btn-search-action" type="submit">
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                            <form action="{% url 'search' %}" method="get" id="search-form" class="d-none"></form>
+                        </div>
 
-                        <form action="{% url 'generate_ai_image' %}" method="post">
-                            {% csrf_token %}
-                            <input class="search-input" type="text" name="prompt" placeholder="AI Image Prompt">
-                            <button class="btn btn-ai" type="submit">
-                                <i class="fas fa-wand-magic-sparkles"></i> Generate
-                            </button>
-                        </form>
+                        <div class="ai-group">
+                            <div class="input-group ai-input-wrapper">
+                                <span class="input-group-text ai-icon">
+                                    <i class="fas fa-wand-magic-sparkles"></i>
+                                </span>
+                                <input type="text" name="prompt" placeholder="Describe AI image..." 
+                                       class="form-control ai-input" id="ai-prompt">
+                                <button class="btn btn-ai-action" type="submit">
+                                    <i class="fas fa-bolt"></i>
+                                </button>
+                            </div>
+                            <form action="{% url 'generate_ai_image' %}" method="post" id="ai-form" class="d-none">
+                                {% csrf_token %}
+                                <input type="hidden" name="prompt" id="ai-hidden-prompt">
+                            </form>
+                        </div>
                     </div>
 
-                    <div class="nav-links">
-                        <a href="{% url 'index' %}" class="nav-link">
-                            <i class="fas fa-home"></i> Home
-                        </a>
-                        <a href="{% url 'random_page' %}" class="nav-link">
-                            <i class="fas fa-random"></i> Random Page
-                        </a>
-                        {% if user.is_authenticated %}
-                            <a href="{% url 'new_page' %}" class="nav-link">
-                                <i class="fas fa-plus-circle"></i> Create New Page
+                    <!-- Navigation Links -->
+                    <div class="nav-section">
+                        <div class="nav-header">
+                            <i class="fas fa-compass"></i>
+                            <span>Navigation</span>
+                        </div>
+                        <div class="nav-links">
+                            <a href="{% url 'index' %}" class="nav-link">
+                                <div class="nav-icon">
+                                    <i class="fas fa-home"></i>
+                                </div>
+                                <div class="nav-content">
+                                    <span class="nav-title">Home</span>
+                                    <span class="nav-desc">Browse all entries</span>
+                                </div>
+                                <div class="nav-arrow">
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
                             </a>
+                            
+                            <a href="{% url 'random_page' %}" class="nav-link">
+                                <div class="nav-icon">
+                                    <i class="fas fa-dice"></i>
+                                </div>
+                                <div class="nav-content">
+                                    <span class="nav-title">Random</span>
+                                    <span class="nav-desc">Discover something new</span>
+                                </div>
+                                <div class="nav-arrow">
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                            </a>
+                            
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'new_page' %}" class="nav-link">
+                                <div class="nav-icon">
+                                    <i class="fas fa-plus-circle"></i>
+                                </div>
+                                <div class="nav-content">
+                                    <span class="nav-title">Create</span>
+                                    <span class="nav-desc">New wiki page</span>
+                                </div>
+                                <div class="nav-arrow">
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Section -->
+                <div class="user-section">
+                    <div class="user-info">
+                        {% if user.is_authenticated %}
+                        <div class="user-avatar">
+                            <i class="fas fa-user-astronaut"></i>
+                        </div>
+                        <div class="user-details">
+                            <span class="user-name">{{ user.username }}</span>
+                            <span class="user-status">
+                                <i class="fas fa-circle online-dot"></i> Online
+                            </span>
+                        </div>
+                        {% else %}
+                        <div class="user-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="user-details">
+                            <span class="user-name">Guest Explorer</span>
+                            <span class="user-status">Join the collective</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="user-actions">
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'logout' %}" class="btn-logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                        {% else %}
+                        <div class="auth-buttons">
+                            <a href="{% url 'login' %}" class="btn-auth btn-login">
+                                <i class="fas fa-sign-in-alt"></i>
+                                <span>Login</span>
+                            </a>
+                            <a href="{% url 'register' %}" class="btn-auth btn-register">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Register</span>
+                            </a>
+                        </div>
                         {% endif %}
                     </div>
                 </div>
 
-                <div class="user-section p-3 mt-auto border-top">
-                    {% if user.is_authenticated %}
-                        <div class="text-center mb-3 fw-bold text-secondary">
-                            <i class="fas fa-user-circle fa-lg me-1"></i> {{ user.username }}
-                        </div>
-                        <a href="{% url 'logout' %}" class="btn btn-logout">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </a>
-                    {% else %}
-                        <p class="text-center text-muted small mb-2">Guest User</p>
-                        <a href="{% url 'login' %}" class="btn btn-search mb-2">Login</a>
-                        <a href="{% url 'register' %}" class="btn btn-edit">Register</a>
-                    {% endif %}
-                </div>
-
             </div>
+            
+            <!-- Main Content Area -->
             <div class="main-content">
                 <div class="content-wrapper">
+                    <!-- Messages/Alerts -->
                     {% if messages %}
+                    <div class="alert-container">
                         {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            <div class="alert-content">
+                                {% if message.tags == 'success' %}
+                                <i class="fas fa-check-circle me-3"></i>
+                                {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                <i class="fas fa-exclamation-circle me-3"></i>
+                                {% elif message.tags == 'warning' %}
+                                <i class="fas fa-exclamation-triangle me-3"></i>
+                                {% elif message.tags == 'info' %}
+                                <i class="fas fa-info-circle me-3"></i>
+                                {% endif %}
+                                <span>{{ message }}</span>
                             </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
                         {% endfor %}
+                    </div>
                     {% endif %}
 
+                    <!-- Main Content Block -->
                     {% block body %}
                     {% endblock %}
                 </div>
@@ -99,5 +207,52 @@
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle search form submission
+        document.getElementById('wiki-search').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.querySelector('#search-form input[name="q"]').value = this.value;
+                document.getElementById('search-form').submit();
+            }
+        });
+        
+        document.querySelector('.btn-search-action').addEventListener('click', function() {
+            const searchValue = document.getElementById('wiki-search').value;
+            if (searchValue.trim()) {
+                document.querySelector('#search-form input[name="q"]').value = searchValue;
+                document.getElementById('search-form').submit();
+            }
+        });
+        
+        // Handle AI form submission
+        document.getElementById('ai-prompt').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('ai-hidden-prompt').value = this.value;
+                document.getElementById('ai-form').submit();
+            }
+        });
+        
+        document.querySelector('.btn-ai-action').addEventListener('click', function() {
+            const promptValue = document.getElementById('ai-prompt').value;
+            if (promptValue.trim()) {
+                document.getElementById('ai-hidden-prompt').value = promptValue;
+                document.getElementById('ai-form').submit();
+            }
+        });
+        
+        // Add animation to nav links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(5px)';
+            });
+            link.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0)';
+            });
+        });
+    });
+    </script>
 </body>
 </html>
