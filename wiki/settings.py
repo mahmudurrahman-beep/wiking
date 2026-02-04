@@ -142,7 +142,8 @@ GITHUB_REPO_NAME = os.environ.get('GITHUB_REPO_NAME', '')
 
 # AI Images
 IMGBB_API_KEY = os.environ.get('IMGBB_API_KEY', '')
-
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 # ====== PRODUCTION SECURITY ======
 if not DEBUG:
     SECURE_SSL_REDIRECT = False
