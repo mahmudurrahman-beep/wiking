@@ -420,24 +420,6 @@ def ai_image_result(request):
         })
 # ============ ADD THESE AT THE END OF views.py ============
 
-def generate_ai_image_process(request):
-    """
-    DUMMY FUNCTION - Always returns success
-    This prevents import errors without doing anything
-    """
-    from django.http import JsonResponse
-    return JsonResponse({
-        'success': True,
-        'message': 'Feature disabled - use main AI endpoint'
-    })
-
-def ai_image_result(request):
-    """
-    DUMMY FUNCTION - Redirects to main AI page
-    """
-    from django.shortcuts import redirect
-    return redirect('generate_ai_image') 
-
 def _save_ai_image_bytes(image_bytes: bytes, prompt: str) -> str:
     """
     Saves image into MEDIA_ROOT/ai_generated/<uuid>.png
