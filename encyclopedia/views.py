@@ -281,12 +281,7 @@ def history(request, title):
 # ============ AI IMAGE VIEWS ============
 @login_required
 def generate_ai_image(request):
-    """
-    Generate AI image from prompt (FREE with fallback),
-    download the image bytes server-side, save it locally in MEDIA,
-    then render with a stable local URL.
-    """
-    from .ai_images import generate_image_bytes  # <-- new import (fallback chain)
+    from .ai_images import generate_ai_image_url
 
     context = {'user': request.user}
 
@@ -294,8 +289,8 @@ def generate_ai_image(request):
         prompt = request.POST.get("prompt", "").strip()
 
         if not prompt:
-            messages.error(request, "Please enter a prompt")
-            return redirect('generate_ai_image')
+            context['error'] = "Please enter a prompt."
+            return render(request, 'encyclopedia/ai_generated.html', context)
 
         # Rate limiting (3/hour)
         cache_key = f"ai_image_{request.user.id}"
@@ -303,53 +298,35 @@ def generate_ai_image(request):
 
         if count >= 3:
             context['error'] = "⚠️ Rate limit: 3 images/hour. Please wait."
-            context.update({
-                'rate_limit_used': count,
-                'rate_limit_max': 3
-            })
+            context.update({'rate_limit_used': count, 'rate_limit_max': 3})
             return render(request, 'encyclopedia/ai_generated.html', context)
 
-        # Generate + Save locally
         try:
             start_time = time.time()
-
-            image_bytes = generate_image_bytes(prompt)  # <-- returns bytes or None
-
+            image_url = generate_ai_image_url(prompt)
             generation_time = time.time() - start_time
 
-            if image_bytes:
-                # Save locally in /media/ai_generated/...
-                image_url = _save_ai_image_bytes(image_bytes, prompt)
-
-                # Update rate limit
+            if image_url:
                 cache.set(cache_key, count + 1, 3600)
-
                 context.update({
                     'success': True,
-                    'image_url': image_url,       # <-- local stable url
+                    'image_url': image_url,
                     'prompt': prompt,
                     'generation_time': round(generation_time, 2),
                     'rate_limit_used': count + 1,
                     'rate_limit_max': 3
                 })
             else:
-                context['error'] = "❌ Failed to generate image (providers unavailable). Please try again later."
-                context.update({
-                    'rate_limit_used': count,
-                    'rate_limit_max': 3
-                })
+                context['error'] = "❌ Image provider is unavailable right now. Please try again later."
+                context.update({'rate_limit_used': count, 'rate_limit_max': 3})
 
         except Exception as e:
             print(f"AI generation error: {e}")
             context['error'] = f"❌ Error: {str(e)}"
-            context.update({
-                'rate_limit_used': count,
-                'rate_limit_max': 3
-            })
+            context.update({'rate_limit_used': count, 'rate_limit_max': 3})
 
     return render(request, 'encyclopedia/ai_generated.html', context)
 
-# ============ AI IMAGE AJAX ENDPOINT ============
 
 @login_required
 def generate_ai_image_process(request):
