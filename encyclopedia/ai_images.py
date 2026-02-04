@@ -1,18 +1,31 @@
 # encyclopedia/ai_images.py
 import urllib.parse
-import hashlib
+import random
 
-def generate_craiyon_image(prompt):
+def generate_pollinations_image(prompt: str, *, width=768, height=768, model="flux", seed=None) -> str:
     """
-    Uses Picsum.photos - ALWAYS WORKS, 100% reliable
+    Real AI image generation via Pollinations (no API key).
+    Returns a URL you can put directly in <img src="...">.
     """
-    
-    # Create consistent ID from prompt
-    prompt_hash = hashlib.md5(prompt.encode()).hexdigest()
-    image_id = int(prompt_hash[:8], 16) % 1000  # Picsum has 1000+ images
-    
-    # Use Picsum.photos - it ALWAYS works and supports CORS
-    image_url = f"https://picsum.photos/id/{image_id}/512/512"
-    
-    print(f"✅ Generated Picsum image #{image_id} for: '{prompt}'")
-    return image_url
+    prompt = (prompt or "").strip()
+    if not prompt:
+        return ""
+
+    # Better "accuracy" for short prompts like "messi"
+    # (You can tune this however you like)
+    if len(prompt.split()) <= 2:
+        prompt = f"photorealistic portrait of {prompt}, close-up, high detail, sharp focus"
+
+    if seed is None:
+        seed = random.randint(1, 10_000_000)
+
+    encoded = urllib.parse.quote(prompt, safe="")
+    # Use query params to control model/size and reduce caching issues
+    return (
+        f"https://image.pollinations.ai/prompt/{encoded}"
+        f"?model={urllib.parse.quote(model)}&width={width}&height={height}&seed={seed}&nologo=true"
+    )
+
+# Keep your old function name so views.py doesn't change
+def generate_craiyon_image(prompt: str) -> str:
+    return generate_pollinations_image(prompt)
