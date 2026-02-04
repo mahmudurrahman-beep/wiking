@@ -27,6 +27,14 @@
             </form>
         </div>
     </div>
+
+    <!-- Error Message (NEW) -->
+    {% if error %}
+    <div class="alert alert-danger mb-4">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        {{ error }}
+    </div>
+    {% endif %}
     
     <!-- Success Results -->
     {% if success %}
@@ -46,7 +54,7 @@
             </p>
         </div>
         
-        <!-- Generated Image Display - SIMPLIFIED -->
+        <!-- Generated Image Display -->
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Your Generated Image</h5>
@@ -63,7 +71,7 @@
                     <p class="mt-2 text-muted">Loading your generated image...</p>
                 </div>
                 
-                <!-- The Actual Image - SIMPLE VERSION -->
+                <!-- The Actual Image -->
                 <div id="image-container">
                     <img src="{{ image_url }}" 
                          alt="AI generated image: {{ prompt }}"
@@ -79,10 +87,10 @@
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     <span id="error-message">Image failed to load. Try opening in new tab.</span>
                     <div class="mt-2">
-                        <button onclick="retryImageLoad()" class="btn btn-sm btn-outline-danger me-2">
+                        <button type="button" onclick="retryImageLoad()" class="btn btn-sm btn-outline-danger me-2">
                             <i class="fas fa-redo me-1"></i>Retry
                         </button>
-                        <button onclick="openImageInNewTab()" class="btn btn-sm btn-outline-primary">
+                        <button type="button" onclick="openImageInNewTab()" class="btn btn-sm btn-outline-primary">
                             <i class="fas fa-external-link-alt me-1"></i>Open in New Tab
                         </button>
                     </div>
@@ -113,22 +121,30 @@
             </div>
         </div>
         
-        <!-- Simple JavaScript -->
+        <!-- JavaScript -->
         <script>
         function imageLoaded() {
             console.log("Image loaded successfully!");
-            document.getElementById('download-btn').disabled = false;
+            const btn = document.getElementById('download-btn');
+            if (btn) btn.disabled = false;
         }
         
         function imageFailed() {
             console.log("Image failed to load");
-            document.getElementById('image-error').style.display = 'block';
+            const err = document.getElementById('image-error');
+            if (err) err.style.display = 'block';
         }
         
+        // FIXED: choose ? or & depending on URL
         function retryImageLoad() {
-            document.getElementById('image-error').style.display = 'none';
+            const err = document.getElementById('image-error');
+            if (err) err.style.display = 'none';
+
             const img = document.getElementById('ai-generated-image');
-            img.src = GENERATED_IMAGE_URL + '&t=' + new Date().getTime();
+            if (!img) return;
+
+            const sep = GENERATED_IMAGE_URL.includes('?') ? '&' : '?';
+            img.src = GENERATED_IMAGE_URL + sep + 't=' + new Date().getTime();
         }
         
         function openImageInNewTab() {
@@ -145,6 +161,8 @@
             
             // Visual feedback
             const btn = document.getElementById('download-btn');
+            if (!btn) return;
+
             const originalHTML = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-check me-2"></i>Saved!';
             btn.classList.remove('btn-success');
