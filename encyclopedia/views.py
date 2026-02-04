@@ -14,7 +14,8 @@ import re
 import os
 from django.core.cache import cache
 import time
-
+import uuid
+from django.conf import settings
 # ============ IMPORT STORAGE FUNCTIONS LATER ============
 # We'll import these INSIDE the functions that need them
 # This avoids circular import issues
@@ -278,55 +279,76 @@ def history(request, title):
     })
 
 # ============ AI IMAGE VIEWS ============
-
 @login_required
 def generate_ai_image(request):
-    """Generate AI image from prompt"""
-    from .ai_images import generate_craiyon_image
-    
+    """
+    Generate AI image from prompt (FREE with fallback),
+    download the image bytes server-side, save it locally in MEDIA,
+    then render with a stable local URL.
+    """
+    from .ai_images import generate_image_bytes  # <-- new import (fallback chain)
+
     context = {'user': request.user}
-    
+
     if request.method == "POST":
         prompt = request.POST.get("prompt", "").strip()
-        
+
         if not prompt:
             messages.error(request, "Please enter a prompt")
-            return redirect('index')
-        
-        # Rate limiting
+            return redirect('generate_ai_image')
+
+        # Rate limiting (3/hour)
         cache_key = f"ai_image_{request.user.id}"
         count = cache.get(cache_key, 0)
-        
+
         if count >= 3:
             context['error'] = "⚠️ Rate limit: 3 images/hour. Please wait."
+            context.update({
+                'rate_limit_used': count,
+                'rate_limit_max': 3
+            })
             return render(request, 'encyclopedia/ai_generated.html', context)
-        
-        # Generate image
+
+        # Generate + Save locally
         try:
             start_time = time.time()
-            image_url = generate_craiyon_image(prompt)
+
+            image_bytes = generate_image_bytes(prompt)  # <-- returns bytes or None
+
             generation_time = time.time() - start_time
-            
-            if image_url:
+
+            if image_bytes:
+                # Save locally in /media/ai_generated/...
+                image_url = _save_ai_image_bytes(image_bytes, prompt)
+
                 # Update rate limit
                 cache.set(cache_key, count + 1, 3600)
-                
+
                 context.update({
                     'success': True,
-                    'image_url': image_url,
+                    'image_url': image_url,       # <-- local stable url
                     'prompt': prompt,
                     'generation_time': round(generation_time, 2),
                     'rate_limit_used': count + 1,
                     'rate_limit_max': 3
                 })
             else:
-                context['error'] = "❌ Failed to generate image. Please try again."
-                
+                context['error'] = "❌ Failed to generate image (providers unavailable). Please try again later."
+                context.update({
+                    'rate_limit_used': count,
+                    'rate_limit_max': 3
+                })
+
         except Exception as e:
             print(f"AI generation error: {e}")
             context['error'] = f"❌ Error: {str(e)}"
-    
+            context.update({
+                'rate_limit_used': count,
+                'rate_limit_max': 3
+            })
+
     return render(request, 'encyclopedia/ai_generated.html', context)
+
 # ============ AI IMAGE AJAX ENDPOINT ============
 
 @login_required
@@ -414,4 +436,20 @@ def ai_image_result(request):
     DUMMY FUNCTION - Redirects to main AI page
     """
     from django.shortcuts import redirect
-    return redirect('generate_ai_image')
+    return redirect('generate_ai_image') 
+
+def _save_ai_image_bytes(image_bytes: bytes, prompt: str) -> str:
+    """
+    Saves image into MEDIA_ROOT/ai_generated/<uuid>.png
+    Returns MEDIA URL (e.g., /media/ai_generated/xxxx.png)
+    """
+    folder = os.path.join(settings.MEDIA_ROOT, "ai_generated")
+    os.makedirs(folder, exist_ok=True)
+
+    filename = f"{uuid.uuid4().hex}.png"
+    path = os.path.join(folder, filename)
+
+    with open(path, "wb") as f:
+        f.write(image_bytes)
+
+    return f"{settings.MEDIA_URL}ai_generated/{filename}"
