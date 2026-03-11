@@ -180,4 +180,4 @@ if 'runserver' in sys.argv or 'migrate' in sys.argv:
     print("=" * 60)
 
 
-POLLINATIONS_API_KEY = 'pk_s6sNYhiEF6hZnRQK'
+POLLINATIONS_API_KEY = 'sk_3f6BqYrgLlNmKN5iCsEIBGyBfVcvkO2E'
