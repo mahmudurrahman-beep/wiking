@@ -281,8 +281,7 @@ def history(request, title):
 # ============ AI IMAGE VIEWS ============
 @login_required
 def generate_ai_image(request):
-    from .ai_images import generate_ai_image_url
-
+    from .ai_images import generate_ai_image_data_url as generate_ai_image_url
     context = {'user': request.user}
 
     if request.method == "POST":
