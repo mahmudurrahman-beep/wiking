@@ -6,45 +6,54 @@ from django.conf import settings
 
 def generate_ai_image_data_url(prompt: str, width: int = 768, height: int = 768, model: str = "flux", seed: int | None = None) -> str | None:
     """
-    NEW VERSION (2026):
-    - Uses the current Pollinations endpoint
-    - Fetches on the SERVER with your private API key (no exposure to users)
-    - Returns a data: URL (embedded image) so it NEVER fails to load
-    - Keeps your original short-prompt enhancement
+    FIXED 2026 VERSION - Uses Authorization header + secret key support
+    Returns data: URL (never fails to load in browser)
     """
     prompt = (prompt or "").strip()
     if not prompt:
         return None
 
-    # Improve short prompts (your original logic)
+    # Your original short-prompt enhancement
     if len(prompt.split()) <= 2:
         prompt = f"photorealistic, high detail, sharp focus: {prompt}"
 
     seed = seed or random.randint(1, 10_000_000)
-    encoded = urllib.parse.quote(prompt, safe="")
+    encoded_prompt = urllib.parse.quote(prompt, safe="")
 
     key = getattr(settings, 'POLLINATIONS_API_KEY', None)
     if not key:
         raise ValueError("❌ POLLINATIONS_API_KEY is not set in settings.py")
 
-    # NEW 2026 ENDPOINT + key
-    url = (
-        f"https://gen.pollinations.ai/image/{encoded}"
+    # NEW ENDPOINT + RECOMMENDED HEADER AUTH (no ?key= in URL)
+    base_url = (
+        f"https://gen.pollinations.ai/image/{encoded_prompt}"
         f"?model={urllib.parse.quote(model)}"
         f"&width={width}&height={height}&seed={seed}&nologo=true"
-        f"&key={urllib.parse.quote(key)}"
     )
 
     try:
-        with urllib.request.urlopen(url, timeout=15) as response:
+        req = urllib.request.Request(
+            base_url,
+            headers={
+                'Authorization': f'Bearer {key}',
+                'User-Agent': 'Wiki-AI-Image-Generator/1.0'  # helps avoid WAF blocks
+            }
+        )
+        
+        with urllib.request.urlopen(req, timeout=20) as response:
             if response.status != 200:
-                print(f"Pollinations returned status {response.status}")
+                error_body = response.read().decode('utf-8', errors='ignore')[:500]
+                print(f"Pollinations error {response.status}: {error_body}")
                 return None
             image_bytes = response.read()
 
-        # Convert to data: URL (works perfectly with your existing template + download button)
+        # Convert to embedded data URL (works perfectly with your template)
         return f"data:image/png;base64,{base64.b64encode(image_bytes).decode('utf-8')}"
 
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode('utf-8', errors='ignore')[:500]
+        print(f"Pollinations HTTP {e.code} error: {error_body}")
+        raise  # Let the view catch it and show real message
     except Exception as e:
         print(f"Pollinations fetch error: {e}")
         return None
