@@ -178,3 +178,6 @@ if 'runserver' in sys.argv or 'migrate' in sys.argv:
         print(f"❌ Import error: {e}")
     
     print("=" * 60)
+
+
+POLLINATIONS_API_KEY = 'pk_s6sNYhiEF6hZnRQK'
